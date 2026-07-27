@@ -173,11 +173,27 @@ function saveGameData() {
   localStorage.setItem("antigravity_quiz_state", JSON.stringify(gameState));
 }
 
+function getPlayerLevelTitle(highScore) {
+  if (highScore < 10) return "Newbie";
+  if (highScore < 25) return "Tập sự";
+  if (highScore < 50) return "Có hiểu biết";
+  if (highScore < 75) return "Chuyên gia";
+  if (highScore < 95) return "Nhà thông thái";
+  return "Phù thủy";
+}
+
 // UI Updates
 function updateUIHeader() {
   document.getElementById("nickname-val").textContent = gameState.nickname;
   document.getElementById("avatar-letter").textContent = gameState.nickname.charAt(0).toUpperCase();
   document.getElementById("gold-val").textContent = gameState.gold;
+  
+  // Cập nhật cấp hiệu của người chơi dựa trên High Score ở Single Mode
+  const levelTitle = getPlayerLevelTitle(gameState.singleHighScore);
+  const lvlEl = document.getElementById("user-level-val");
+  if (lvlEl) {
+    lvlEl.textContent = levelTitle;
+  }
 }
 
 // Navigation
@@ -289,7 +305,20 @@ function startSingleGame() {
 }
 
 function loadSingleQuestion() {
-  singleState.currentQuestion = getQuestion(Math.min(10, Math.ceil(singleState.level / 10)));
+  // Logic phân cấp độ khó của Open Trivia DB:
+  // - 10 câu đầu (level 1-10): Easy (trong prototype lấy từ level 1-3)
+  // - 20 câu tiếp (level 11-30): Medium (trong prototype lấy từ level 4-7)
+  // - Các câu sau (level 31+): Hard (trong prototype lấy từ level 8-10)
+  let mockQuestionLevel;
+  if (singleState.level <= 10) {
+    mockQuestionLevel = 1 + Math.floor(Math.random() * 3); // Lấy ngẫu nhiên level 1, 2, 3
+  } else if (singleState.level <= 30) {
+    mockQuestionLevel = 4 + Math.floor(Math.random() * 4); // Lấy ngẫu nhiên level 4, 5, 6, 7
+  } else {
+    mockQuestionLevel = 8 + Math.floor(Math.random() * 3); // Lấy ngẫu nhiên level 8, 9, 10
+  }
+
+  singleState.currentQuestion = getQuestion(mockQuestionLevel);
   singleState.wrongAnswersSelected = [];
   singleState.doubleAnswerUsedThisQuestion = false;
   
@@ -582,11 +611,12 @@ function loadBattleQuestion() {
   battleState.botSelectedIdx = null;
   battleState.timer = 30;
   
-  // Difficulty goes from 1 to 10
-  const difficulty = battleState.questionIndex + 1;
-  battleState.currentQuestion = getQuestion(difficulty);
+  const questionNum = battleState.questionIndex + 1;
+  // Chế độ Battle không truyền độ khó (lấy ngẫu nhiên mọi cấp độ từ 1-10)
+  const randomLevel = 1 + Math.floor(Math.random() * 10);
+  battleState.currentQuestion = getQuestion(randomLevel);
   
-  document.getElementById("battle-question-num").textContent = `Question ${difficulty} / 10`;
+  document.getElementById("battle-question-num").textContent = `Question ${questionNum} / 10`;
   document.getElementById("timer-sec").textContent = battleState.timer;
   document.getElementById("timer-fill-bar").style.width = "100%";
   

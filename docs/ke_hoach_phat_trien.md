@@ -23,6 +23,12 @@ Tài liệu này trình bày kế hoạch chi tiết để di chuyển (migrate)
 - **State Management**:
   - Quản lý trạng thái vòng đời trò chơi (chuẩn bị trận đấu, đếm ngược 30 giây, hiển thị đáp án 5 giây, kết thúc game).
   - Quản lý ví vàng và trạng thái sở hữu/trang bị vật phẩm.
+  - **Cấu hình cấp độ khó tăng dần trong Single Mode** (Khi kết nối API OTDB):
+    - Câu 1 - 10: Tải câu hỏi từ `TriviaDifficulty.easy`
+    - Câu 11 - 30: Tải câu hỏi từ `TriviaDifficulty.medium`
+    - Câu 31 - 100: Tải câu hỏi từ `TriviaDifficulty.hard`
+  - **Cấu hình độ khó trong Battle Mode**:
+    - Không truyền tham số độ khó (`difficulty = TriviaDifficulty.any`) để hệ thống tự động tải ngẫu nhiên các câu hỏi từ dễ đến khó cho 10 câu hỏi của trận đấu.
 - **Thay thế LocalStorage bằng SQLite (`sqflite`)**:
   - Khởi tạo database local lưu trữ thông tin người dùng (vàng hiện có, các vật phẩm đã mua, cài đặt âm lượng/ngôn ngữ).
   - Lưu trữ thành tích cá nhân cao nhất (High Scores) để hiển thị cục bộ trên Leaderboard.
