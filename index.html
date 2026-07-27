@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Quiz Arena - Trí Tuệ & Tốc Độ</title>
+  <meta name="description"
+    content="Chơi game trắc nghiệm đối kháng đỉnh cao, trả lời câu hỏi, thách đấu bot hoặc người chơi khác, tích lũy vàng và nâng cấp nhân vật!">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Main Game Container -->
+  <div class="game-container">
+
+    <!-- Top Header Bar -->
+    <header class="game-header">
+      <div class="user-profile-header" onclick="showScreen('settings')">
+        <div class="avatar-mini" id="avatar-letter">P</div>
+        <div class="profile-info">
+          <span class="nickname-display" id="nickname-val">Player_1</span>
+          <span style="font-size: 0.65rem; color: var(--accent-cyan); font-weight: bold; letter-spacing: 1px;">LEVEL
+            1</span>
+        </div>
+      </div>
+
+      <!-- Gold Badge -->
+      <div class="gold-badge" onclick="claimDailyReward()" title="Nhấp để nhận Vàng hàng ngày!">
+        <i class="fas fa-coins gold-icon"></i>
+        <span id="gold-val">2000</span>
+      </div>
+    </header>
+
+    <!-- Content Area (Scrollable screens) -->
+    <main class="game-content">
+
+      <!-- 1. LOBBY SCREEN -->
+      <div id="lobby-screen" class="game-screen lobby-screen">
+        <div class="game-logo-container">
+          <h1 class="logo-text">QUIZ ARENA</h1>
+          <div class="logo-sub">Speed & Intelligence</div>
+        </div>
+
+        <!-- Mode: Battle Mode -->
+        <div class="mode-card battle-card" onclick="startBattleMatchmaking()">
+          <div class="card-content">
+            <h2 class="card-title">BATTLE MODE</h2>
+            <span class="card-desc">Đối kháng 1v1 chạy đua (Đặt cọc 200 vàng)</span>
+          </div>
+          <div class="card-icon"><i class="fas fa-bolt"></i></div>
+        </div>
+
+        <!-- Mode: Single Mode -->
+        <div class="mode-card single-card" onclick="startSingleGame()">
+          <div class="card-content">
+            <h2 class="card-title">SINGLE MODE</h2>
+            <span class="card-desc">Ai là triệu phú 100 câu hỏi (Offline / Online)</span>
+          </div>
+          <div class="card-icon"><i class="fas fa-user"></i></div>
+        </div>
+
+        <!-- Daily Reward Banner -->
+        <div class="daily-reward-banner">
+          <div class="reward-info">
+            <i class="fas fa-gift reward-gift-icon"></i>
+            <div>
+              <div class="reward-text-title">Daily Gift</div>
+              <div class="reward-text-desc">Mỗi ngày tặng 1000 vàng</div>
+            </div>
+          </div>
+          <button class="reward-btn" id="claim-daily-btn" onclick="claimDailyReward()">Claim 1,000</button>
+        </div>
+      </div>
+
+      <!-- 2. SINGLE QUIZ SCREEN -->
+      <div id="quiz-screen" class="game-screen quiz-screen hidden">
+        <div class="quiz-top-bar">
+          <span class="question-counter" id="single-question-num">Question 1 / 100</span>
+
+          <!-- Lifelines Row -->
+          <div class="lifelines-row">
+            <button class="lifeline-btn" id="lifeline-50" onclick="useFiftyFifty()"
+              data-tooltip="Quyền trợ giúp 50/50">50:50</button>
+            <button class="lifeline-btn" id="lifeline-double" onclick="useDoubleAnswer()"
+              data-tooltip="Xem quảng cáo trả lời 2 lần"><i class="fas fa-play"></i> x2</button>
+            <button class="lifeline-btn" id="lifeline-change" onclick="useChangeQuestion()"
+              data-tooltip="Đổi câu hỏi khác"><i class="fas fa-redo"></i></button>
+          </div>
+        </div>
+
+        <!-- Question Box -->
+        <div class="question-card" id="single-question-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Options Container -->
+        <div class="options-grid" id="single-options-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <button class="btn-secondary" onclick="showScreen('lobby')" style="margin-top: auto;">Rút Lui (Về Sảnh)</button>
+      </div>
+
+      <!-- 3. BATTLE SCREEN -->
+      <div id="battle-screen" class="game-screen battle-screen hidden">
+
+        <!-- Track Visual Racing -->
+        <div class="race-container">
+          <!-- Player Track -->
+          <div class="track">
+            <div class="runner-lane">
+              <div class="runner player" id="player-runner" style="left: 0px;">
+                <div class="runner-avatar">🏃‍♂️</div>
+                <div class="runner-label" id="player-track-name">Bạn</div>
+              </div>
+            </div>
+          </div>
+          <!-- Bot Track -->
+          <div class="track">
+            <div class="runner-lane">
+              <div class="runner bot" id="bot-runner" style="left: 0px;">
+                <div class="runner-avatar">🤖</div>
+                <div class="runner-label">Bot</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Finish Line flag -->
+          <div class="finish-line"></div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="battle-stats">
+          <span id="battle-question-num">Question 1 / 10</span>
+          <div>
+            Tỉ số: <span id="player-score-val" style="color: var(--accent-pink); font-weight: bold;">0/10</span> - <span
+              id="bot-score-val" style="color: var(--text-secondary);">0/10</span>
+          </div>
+        </div>
+
+        <!-- 30s Timer Indicator -->
+        <div class="battle-timer-bar">
+          <div class="timer-fill" id="timer-fill-bar"></div>
+        </div>
+        <div style="text-align: center; margin-top: -10px; margin-bottom: 15px; font-weight: bold;">
+          Time Remaining: <span id="timer-sec" style="color: var(--accent-cyan);">30</span>s
+        </div>
+
+        <!-- Question Box -->
+        <div class="question-card" id="battle-question-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Options Container -->
+        <div class="options-grid" id="battle-options-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- 3.5. SHOP SCREEN -->
+      <div id="shop-screen" class="game-screen shop-screen hidden">
+        <h2 class="logo-text" style="font-size: 2rem; text-align: center; margin-bottom: 10px;">CỬA HÀNG</h2>
+
+        <!-- Shop Tabs -->
+        <div class="rank-tabs" style="margin-bottom: 15px;">
+          <button class="rank-tab-btn active" id="shop-tab-hat" onclick="switchShopCategory('hat')">Mũ</button>
+          <button class="rank-tab-btn" id="shop-tab-shoes" onclick="switchShopCategory('shoes')">Giày</button>
+          <button class="rank-tab-btn" id="shop-tab-effect" onclick="switchShopCategory('effect')">Hiệu Ứng</button>
+        </div>
+
+        <!-- Shop Items List -->
+        <div class="leaderboard-list" id="shop-items-list" style="max-height: 420px;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- 4. SETTINGS SCREEN -->
+      <div id="settings-screen" class="game-screen settings-screen hidden">
+        <h2 class="logo-text" style="font-size: 2rem; text-align: center;">SETTINGS</h2>
+
+        <!-- Nickname Setting -->
+        <div class="settings-group">
+          <div class="settings-title"><i class="fas fa-user-edit"></i> Profile</div>
+          <div class="setting-row">
+            <label for="input-nickname">NICKNAME</label>
+            <input type="text" id="input-nickname" class="input-text" maxlength="15"
+              placeholder="Nhập tên người chơi...">
+          </div>
+        </div>
+
+        <!-- Target Language Setting (ML Kit) -->
+        <div class="settings-group">
+          <div class="settings-title"><i class="fas fa-globe"></i> Ngôn Ngữ</div>
+          <div class="setting-row">
+            <label for="select-language">CHỌN NGÔN NGỮ</label>
+            <select id="select-language" class="input-text" style="background: rgba(15, 12, 27, 0.8); color: white;">
+              <option value="en">English (Bản gốc)</option>
+              <option value="vi">Tiếng Việt (Sẵn sàng)</option>
+              <option value="es">Español - Tây Ban Nha</option>
+              <option value="fr">Français - Pháp</option>
+              <option value="ja">日本語 - Nhật Bản</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sound Setting -->
+        <div class="settings-group">
+          <div class="settings-title"><i class="fas fa-volume-up"></i> Âm Thanh</div>
+          <div class="setting-row">
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold;">
+              <span>VOLUME</span>
+              <span id="volume-val" style="color: var(--accent-cyan);">80%</span>
+            </div>
+            <div class="slider-container">
+              <i class="fas fa-volume-down" style="color: var(--text-secondary);"></i>
+              <input type="range" id="input-volume" class="input-slider" min="0" max="100" value="80"
+                oninput="handleVolumeChange(this.value)">
+              <i class="fas fa-volume-up" style="color: var(--accent-pink);"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Integration Social Accounts Placeholders -->
+        <div class="settings-group">
+          <div class="settings-title"><i class="fas fa-share-nodes"></i> Liên Kết Tài Khoản (Sắp ra mắt)</div>
+          <div class="social-login-grid">
+            <div class="social-btn facebook" title="Liên kết Facebook"><i class="fab fa-facebook-f"></i></div>
+            <div class="social-btn gmail" title="Liên kết Gmail"><i class="fab fa-google"></i></div>
+            <div class="social-btn x" title="Liên kết X (Twitter)"><i class="fab fa-twitter"></i></div>
+            <div class="social-btn instagram" title="Liên kết Instagram"><i class="fab fa-instagram"></i></div>
+            <div class="social-btn threads" title="Liên kết Threads"><i class="fas fa-at"></i></div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="saveSettings()">Save & Back</button>
+      </div>
+
+      <!-- 5. RANK SCREEN -->
+      <div id="rank-screen" class="game-screen rank-screen hidden">
+        <h2 class="logo-text" style="font-size: 2rem; text-align: center; margin-bottom: 10px;">LEADERBOARD</h2>
+
+        <!-- Sub Tabs -->
+        <div class="rank-tabs">
+          <button class="rank-tab-btn active" id="rank-tab-single" onclick="renderLeaderboard('single')">Single
+            Mode</button>
+          <button class="rank-tab-btn" id="rank-tab-gold" onclick="renderLeaderboard('gold')">Tổng Vàng</button>
+        </div>
+
+        <!-- Rankings List -->
+        <div class="leaderboard-list" id="leaderboard-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer Navigation Tabs -->
+    <footer class="game-footer">
+      <button class="nav-tab active" data-screen="lobby" onclick="showScreen('lobby')">
+        <i class="fas fa-home"></i>
+        <span>Sảnh</span>
+      </button>
+      <button class="nav-tab" data-screen="shop" onclick="showScreen('shop')">
+        <i class="fas fa-shopping-bag"></i>
+        <span>Cửa Hàng</span>
+      </button>
+      <button class="nav-tab" data-screen="rank" onclick="showScreen('rank')">
+        <i class="fas fa-crown"></i>
+        <span>Hạng</span>
+      </button>
+      <button class="nav-tab" data-screen="settings" onclick="showScreen('settings')">
+        <i class="fas fa-cog"></i>
+        <span>Cài Đặt</span>
+      </button>
+    </footer>
+
+    <!-- OVERLAY MODAL: Simulated Ads Rewarded -->
+    <div id="ad-overlay" class="overlay-modal hidden">
+      <div class="modal-content">
+        <i class="fas fa-play-circle modal-icon" style="color: var(--accent-cyan);"></i>
+        <h3 class="modal-title">SPONSOR AD</h3>
+        <p class="modal-desc">Quảng cáo đang phát từ CrazyGames. Vui lòng xem hết để nhận quyền trợ giúp!</p>
+        <div class="ad-progress-bar">
+          <div class="ad-progress-fill" id="ad-progress-fill"></div>
+        </div>
+        <div style="font-weight: bold; font-size: 1.2rem;">
+          Đóng sau <span id="ad-sec-text" style="color: var(--accent-cyan);">5</span>s
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERLAY MODAL: Matchmaking Battle -->
+    <div id="battle-matchmaking-overlay" class="bet-matching-overlay hidden">
+      <div class="bet-card">
+        <i class="fas fa-coins modal-icon" style="color: var(--accent-yellow);"></i>
+        <h3 class="modal-title" style="color: var(--accent-yellow);">BATTLE STAKES</h3>
+        <p class="modal-desc">Đặt cọc 200 vàng khởi tranh trận đấu. Người thắng ăn 360 vàng (đã trừ 10% phí).</p>
+        <div class="bet-gold-amount">200 <i class="fas fa-coins"></i></div>
+        <div class="matching-spinner"></div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); letter-spacing: 1px;">ĐANG GHÉP TRẬN...</p>
+      </div>
+    </div>
+
+    <!-- OVERLAY MODAL: Single Game Over -->
+    <div id="game-over-overlay" class="overlay-modal hidden">
+      <div class="modal-content">
+        <div id="go-icon" class="fas fa-sad-tear modal-icon"></div>
+        <h3 class="modal-title" id="go-title">GAME OVER</h3>
+        <p class="modal-desc" id="go-desc">Bạn đã trả lời sai câu hỏi.</p>
+        <button class="btn-primary" onclick="closeGameOver()">Quay Lại Sảnh</button>
+      </div>
+    </div>
+
+    <!-- OVERLAY MODAL: Battle Game Over -->
+    <div id="battle-over-overlay" class="overlay-modal hidden">
+      <div class="modal-content">
+        <div id="bo-icon" class="fas fa-trophy modal-icon"></div>
+        <h3 class="modal-title" id="bo-title">KẾT QUẢ BATTLE</h3>
+        <p class="modal-desc" id="bo-desc">Nội dung trận đấu...</p>
+        <div class="bet-gold-amount" id="bo-gold-reward" style="font-size: 1.5rem;">+360 Gold</div>
+        <button class="btn-primary" onclick="closeBattleOver()">Quay Lại Sảnh</button>
+      </div>
+    </div>
+
+    <!-- OVERLAY MODAL: ML Kit Download Model Simulation -->
+    <div id="mlkit-download-overlay" class="overlay-modal hidden">
+      <div class="modal-content">
+        <i class="fas fa-cloud-download-alt modal-icon" style="color: var(--accent-cyan);"></i>
+        <h3 class="modal-title">ML KIT TRANSLATOR</h3>
+        <p class="modal-desc" id="mlkit-download-desc">Đang tải xuống mô hình ngôn ngữ dịch offline (30MB)...</p>
+        <div class="ad-progress-bar">
+          <div class="ad-progress-fill" id="mlkit-progress-fill"></div>
+        </div>
+        <div style="font-weight: bold; font-size: 1.1rem;" id="mlkit-percent-text">
+          0%
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="questions.js?v=2"></script>
+  <script src="app.js?v=2"></script>
+</body>
+
+</html>
