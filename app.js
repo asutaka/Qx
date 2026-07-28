@@ -585,6 +585,8 @@ function setupBattleGame() {
     questionIndex: 0,
     playerScore: 0,
     botScore: 0,
+    prevPlayerScore: 0,
+    prevBotScore: 0,
     timer: 30,
     timerInterval: null,
     playerAnswered: false,
@@ -758,20 +760,101 @@ function updateRunnerPositions() {
   if (shoesItem && shoesItem.emoji) shoesEmoji = shoesItem.emoji;
   if (effectItem && effectItem.emoji) effectEmoji = effectItem.emoji;
   
-  // Render Custom Runner: Hat on top of player, shoe on foot, trail behind
-  pAvatar.textContent = `${hatEmoji}🏃‍♂️${shoesEmoji}${effectEmoji}`;
+  // Helper: check if character is already rendered (to avoid unnecessary innerHTML writes that disrupt animation)
+  const pCharExists = pAvatar.querySelector(".character-2d");
+  if (!pCharExists) {
+    pAvatar.innerHTML = `
+      <div class="character-2d state-running chibi-char" id="player-char-2d">
+        <div class="char-shadow"></div>
+        <div class="char-effect">${effectEmoji}</div>
+        <div class="char-body">
+          <div class="char-leg leg-left">
+            <div class="char-shoe">${shoesEmoji}</div>
+          </div>
+          <div class="char-leg leg-right">
+            <div class="char-shoe">${shoesEmoji}</div>
+          </div>
+          <div class="char-torso"></div>
+          <div class="char-arm arm-left"></div>
+          <div class="char-arm arm-right"></div>
+          <div class="char-head">
+            <div class="chibi-face">
+              <div class="chibi-eye eye-left"><div class="eye-shine"></div></div>
+              <div class="chibi-eye eye-right"><div class="eye-shine"></div></div>
+              <div class="chibi-blush blush-left"></div>
+              <div class="chibi-blush blush-right"></div>
+              <div class="chibi-mouth">◡</div>
+            </div>
+            <div class="char-hat">${hatEmoji}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    // If it exists, make sure the emojis are updated if they changed
+    const hatEl = pAvatar.querySelector(".char-hat");
+    if (hatEl) hatEl.textContent = hatEmoji;
+    const shoesEls = pAvatar.querySelectorAll(".char-shoe");
+    shoesEls.forEach(el => el.textContent = shoesEmoji);
+    const effectEl = pAvatar.querySelector(".char-effect");
+    if (effectEl) effectEl.textContent = effectEmoji;
+  }
+
+  const bAvatar = botRunner ? botRunner.querySelector(".runner-avatar") : null;
+  const bCharExists = bAvatar ? bAvatar.querySelector(".character-2d") : null;
+  if (bAvatar && !bCharExists) {
+    bAvatar.innerHTML = `
+      <div class="character-2d state-running chibi-char chibi-bot" id="bot-char-2d">
+        <div class="char-shadow"></div>
+        <div class="char-body">
+          <div class="char-leg leg-left"></div>
+          <div class="char-leg leg-right"></div>
+          <div class="char-torso"></div>
+          <div class="char-arm arm-left"></div>
+          <div class="char-arm arm-right"></div>
+          <div class="char-head">
+            <div class="chibi-face">
+              <div class="bot-eye eye-left"></div>
+              <div class="bot-eye eye-right"></div>
+              <div class="chibi-blush blush-left" style="background: rgba(0, 210, 255, 0.35);"></div>
+              <div class="chibi-blush blush-right" style="background: rgba(0, 210, 255, 0.35);"></div>
+              <div class="chibi-mouth" style="color: var(--accent-cyan);">◡</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
   
   // Each score gives 10% progress (10 questions max)
   const playerPct = Math.min(100, (battleState.playerScore / 10) * 100);
   const botPct = Math.min(100, (battleState.botScore / 10) * 100);
   
-  // Account for runner width, offset by max left limit to keep it within line
-  // 0% score is at left: 0px, 100% score is at left: calc(100% - 60px)
-  playerRunner.style.left = `calc(${playerPct}% - ${playerPct > 0 ? '60px' : '0px'})`;
-  botRunner.style.left = `calc(${botPct}% - ${botPct > 0 ? '60px' : '0px'})`;
+  // Position runners relative to the new runner-lane boundaries
+  playerRunner.style.left = `${playerPct}%`;
+  botRunner.style.left = `${botPct}%`;
   
   document.getElementById("player-score-val").textContent = `${battleState.playerScore}/10`;
   document.getElementById("bot-score-val").textContent = `${battleState.botScore}/10`;
+
+  // Set characters to always run
+  const pChar = pAvatar.querySelector(".character-2d");
+  if (pChar) {
+    pChar.classList.remove("state-standing");
+    pChar.classList.add("state-running");
+  }
+  if (battleState.playerScore > battleState.prevPlayerScore) {
+    battleState.prevPlayerScore = battleState.playerScore;
+  }
+
+  const bChar = bAvatar ? bAvatar.querySelector(".character-2d") : null;
+  if (bChar) {
+    bChar.classList.remove("state-standing");
+    bChar.classList.add("state-running");
+  }
+  if (battleState.botScore > battleState.prevBotScore) {
+    battleState.prevBotScore = battleState.botScore;
+  }
 }
 
 function endBattleGame() {
@@ -780,8 +863,6 @@ function endBattleGame() {
   const desc = document.getElementById("bo-desc");
   const goldReward = document.getElementById("bo-gold-reward");
   const icon = document.getElementById("bo-icon");
-  
-  modal.classList.remove("hidden");
   
   let goldDiff = 0;
   if (battleState.playerScore > battleState.botScore) {
@@ -794,7 +875,6 @@ function endBattleGame() {
     title.textContent = "VICTORY!";
     desc.textContent = `Bạn đã thắng Bot! Bạn trả lời đúng nhiều hơn (${battleState.playerScore} vs ${battleState.botScore}).`;
     goldReward.textContent = `+360 Gold (Đã trừ 10% thuế)`;
-    playSound('win');
   } else if (battleState.playerScore < battleState.botScore) {
     // Loss. Gets 0 back. Lost the 200 bet.
     goldDiff = 0;
@@ -803,7 +883,6 @@ function endBattleGame() {
     title.textContent = "DEFEAT";
     desc.textContent = `Bạn đã thua Bot! (${battleState.playerScore} vs ${battleState.botScore}).`;
     goldReward.textContent = `-200 Gold`;
-    playSound('wrong');
   } else {
     // Tie. Both get 180 gold back (representing 200 bet - 10% system tax)
     goldDiff = 180;
@@ -818,6 +897,39 @@ function endBattleGame() {
   
   saveGameData();
   updateUIHeader();
+
+  // Run the winner (or both in case of a tie) off-screen before showing the overlay
+  const playerRunner = document.getElementById("player-runner");
+  const botRunner = document.getElementById("bot-runner");
+  
+  if (playerRunner && botRunner) {
+    if (battleState.playerScore >= battleState.botScore) {
+      playerRunner.style.left = "calc(100% + 80px)";
+      const pChar = playerRunner.querySelector(".character-2d");
+      if (pChar) {
+        pChar.classList.remove("state-standing");
+        pChar.classList.add("state-running");
+      }
+    }
+    if (battleState.botScore >= battleState.playerScore) {
+      botRunner.style.left = "calc(100% + 80px)";
+      const bChar = botRunner.querySelector(".character-2d");
+      if (bChar) {
+        bChar.classList.remove("state-standing");
+        bChar.classList.add("state-running");
+      }
+    }
+  }
+
+  // Play result sound and show overlay modal after the transition (1.8s)
+  setTimeout(() => {
+    modal.classList.remove("hidden");
+    if (battleState.playerScore > battleState.botScore) {
+      playSound('win');
+    } else if (battleState.playerScore < battleState.botScore) {
+      playSound('wrong');
+    }
+  }, 1800);
 }
 
 function closeBattleOver() {

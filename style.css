@@ -601,7 +601,7 @@ body::after {
 }
 
 .track {
-  height: 40px;
+  height: 80px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
   position: relative;
@@ -611,16 +611,50 @@ body::after {
 }
 
 .runner-lane {
+  position: absolute;
+  left: 30px;
+  right: 40px;
+  top: 0;
+  bottom: 0;
+}
+
+.track-markers {
+  position: absolute;
+  left: 0;
   width: 100%;
-  position: relative;
-  height: 100%;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.track-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0.15;
+}
+
+.track-marker-line {
+  width: 1px;
+  height: 25px;
+  background: #fff;
+}
+
+.track-marker-label {
+  font-size: 0.6rem;
+  color: #fff;
+  margin-top: 2px;
+  font-weight: bold;
 }
 
 .runner {
   position: absolute;
-  left: 0;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -631,7 +665,9 @@ body::after {
 .runner-avatar {
   font-size: 1.5rem;
   filter: drop-shadow(0 0 6px rgba(255,255,255,0.4));
-  animation: runBounce 0.4s infinite alternate linear;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .runner-label {
@@ -651,14 +687,354 @@ body::after {
   filter: drop-shadow(0 0 8px var(--accent-pink));
 }
 
-@keyframes runBounce {
-  0% { transform: translateY(-50%) rotate(-5deg); }
-  100% { transform: translateY(-60%) rotate(5deg); }
+/* 2D Modular Character Styling (Cute Chibi Style) */
+.character-2d {
+  position: relative;
+  width: 55px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Shadow under character */
+.char-shadow {
+  position: absolute;
+  bottom: -2px;
+  width: 32px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  z-index: 1;
+  animation: shadowScale 1.8s infinite alternate ease-in-out;
+}
+
+.character-2d.state-running .char-shadow {
+  animation: shadowScaleRun 0.2s infinite alternate ease-in-out;
+}
+
+/* Body container to hold head/torso/limbs */
+.char-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  transform-origin: bottom center;
+}
+
+/* Head */
+.char-head {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 32px;
+  border-radius: 17px / 16px; /* Oval chibi head */
+  background: linear-gradient(135deg, #ffded3, #f5b096); /* Cute peach skin tone */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  box-shadow: inset -1px -1px 4px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.chibi-bot .char-head {
+  background: linear-gradient(135deg, #241d3b, #120e24); /* Visor glass */
+  border: 2px solid var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.35);
+}
+
+/* Face container */
+.chibi-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Cute Chibi Eyes */
+.chibi-eye {
+  position: absolute;
+  top: 13px;
+  width: 7px;
+  height: 9px;
+  background: #19142e;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chibi-eye.eye-left {
+  left: 7px;
+}
+
+.chibi-eye.eye-right {
+  right: 7px;
+}
+
+.eye-shine {
+  width: 2.5px;
+  height: 2.5px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 1.5px;
+  left: 1.5px;
+}
+
+/* Robot Eyes (Glowing Blue/Cyan) */
+.chibi-bot .bot-eye {
+  position: absolute;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: robotBlink 4s infinite ease-in-out;
+}
+
+@keyframes robotBlink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+.chibi-bot .bot-eye.eye-left {
+  left: 8px;
+}
+
+.chibi-bot .bot-eye.eye-right {
+  right: 8px;
+}
+
+/* Blush cheeks */
+.chibi-blush {
+  position: absolute;
+  top: 20px;
+  width: 6px;
+  height: 4px;
+  background: rgba(255, 46, 147, 0.45);
+  border-radius: 50%;
+  filter: blur(0.5px);
+}
+
+.chibi-blush.blush-left {
+  left: 4px;
+}
+
+.chibi-blush.blush-right {
+  right: 4px;
+}
+
+/* Mouth */
+.chibi-mouth {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #c96253;
+  line-height: 1;
+}
+
+/* Torso */
+.char-torso {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  z-index: 4;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.chibi-bot .char-torso {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+  border: 1px solid var(--accent-purple);
+}
+
+/* Limbs Base */
+.char-arm, .char-leg {
+  position: absolute;
+  background: #f5b096; /* Peach skin limbs */
+  border-radius: 2px;
+}
+
+.chibi-bot .char-arm, .chibi-bot .char-leg {
+  background: #9e9e9e; /* Robot metal default */
+}
+
+/* Arms */
+.char-arm {
+  width: 4px;
+  height: 11px;
+  top: 35px;
+  transform-origin: top center;
+  z-index: 3;
+}
+
+.chibi-bot .char-arm {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 4px var(--accent-cyan);
+}
+
+.arm-left {
+  left: 14px;
+  transform: rotate(15deg);
+}
+
+.arm-right {
+  right: 14px;
+  transform: rotate(-15deg);
+}
+
+/* Legs */
+.char-leg {
+  width: 5px;
+  height: 11px;
+  top: 50px;
+  transform-origin: top center;
+  z-index: 3;
+}
+
+.chibi-bot .char-leg {
+  background: #3b5998;
+}
+
+.leg-left {
+  left: 19px;
+}
+
+.leg-right {
+  right: 19px;
+}
+
+/* ACCESSORIES */
+
+/* Hat */
+.char-hat {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  z-index: 10;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Shoes */
+.char-shoe {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.95rem;
+  z-index: 8;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Effect Trail */
+.char-effect {
+  position: absolute;
+  left: -14px;
+  top: 32px;
+  font-size: 1.5rem;
+  z-index: 1;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s ease-in-out;
+  pointer-events: none;
+}
+
+.character-2d.state-running .char-effect {
+  opacity: 0.95;
+  transform: scale(1.1);
+  animation: effectPulse 0.3s infinite alternate ease-in-out;
+}
+
+/* ANIMATIONS */
+
+/* Standing animations (breathing) */
+.character-2d.state-standing .char-body {
+  animation: breath 1.8s infinite ease-in-out;
+}
+
+@keyframes breath {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-2px) scaleY(0.98); }
+}
+
+@keyframes shadowScale {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50% { transform: scale(0.9) translateX(-1px); opacity: 0.25; }
+}
+
+/* Running Animations */
+.character-2d.state-running .leg-left {
+  animation: runLegLeft 0.4s infinite linear;
+}
+
+.character-2d.state-running .leg-right {
+  animation: runLegRight 0.4s infinite linear;
+}
+
+.character-2d.state-running .arm-left {
+  animation: runArmLeft 0.4s infinite linear;
+}
+
+.character-2d.state-running .arm-right {
+  animation: runArmRight 0.4s infinite linear;
+}
+
+.character-2d.state-running .char-body {
+  animation: runBounce2D 0.2s infinite alternate linear;
+}
+
+@keyframes runLegLeft {
+  0%, 100% { transform: rotate(40deg); }
+  50% { transform: rotate(-40deg); }
+}
+
+@keyframes runLegRight {
+  0%, 100% { transform: rotate(-40deg); }
+  50% { transform: rotate(40deg); }
+}
+
+@keyframes runArmLeft {
+  0%, 100% { transform: rotate(-45deg); }
+  50% { transform: rotate(45deg); }
+}
+
+@keyframes runArmRight {
+  0%, 100% { transform: rotate(45deg); }
+  50% { transform: rotate(-45deg); }
+}
+
+@keyframes runBounce2D {
+  0% { transform: translateY(0) rotate(8deg); }
+  100% { transform: translateY(-4px) rotate(12deg); }
+}
+
+@keyframes shadowScaleRun {
+  0% { transform: scale(0.8); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.2; }
+}
+
+@keyframes effectPulse {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.2) translate(-4px, 1px); }
 }
 
 .finish-line {
   position: absolute;
-  right: 15px;
+  right: 54px;
   height: 90%;
   width: 4px;
   background: repeating-linear-gradient(
