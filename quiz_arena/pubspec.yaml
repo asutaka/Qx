@@ -1,0 +1,39 @@
+name: quiz_arena
+description: "A competitive neon-styled Quiz game migrated from HTML/CSS/JS web prototype."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Icons and Fonts
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+
+  # State Management
+  provider: ^6.1.1
+
+  # API Communication
+  http: ^1.2.0
+
+  # Local Database
+  sqflite: ^2.3.0
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Register character image assets (will mirror the assets folder of Qx)
+  assets:
+    - assets/characters/
+    - assets/audio/
