@@ -17,8 +17,28 @@ let gameState = {
   equippedHat: "hat_none",
   equippedShoes: "shoes_none",
   equippedEffect: "effect_none",
-  equippedCharacter: "char_khoi_nguyen_m"
+  equippedCharacter: "char_khoi_nguyen_m",
+  country: "vn"
 };
+
+const COUNTRY_FLAGS = {
+  vn: "🇻🇳",
+  us: "🇺🇸",
+  jp: "🇯🇵",
+  kr: "🇰🇷",
+  gb: "🇬🇧",
+  fr: "🇫🇷",
+  de: "🇩🇪",
+  br: "🇧🇷",
+  ca: "🇨🇦",
+  au: "🇦🇺",
+  sg: "🇸🇬",
+  th: "🇹🇭"
+};
+
+function getCountryFlag(code) {
+  return COUNTRY_FLAGS[code] || "🏳️";
+}
 
 // Shop Items Database
 const SHOP_ITEMS = {
@@ -184,6 +204,7 @@ function loadGameData() {
       if (!gameState.equippedEffect) gameState.equippedEffect = "effect_none";
       if (!gameState.equippedCharacter) gameState.equippedCharacter = "char_khoi_nguyen_m";
       if (!gameState.targetLanguage) gameState.targetLanguage = "en";
+      if (!gameState.country) gameState.country = "vn";
 
       if (!gameState.ownedItems.includes("char_khoi_nguyen_m")) gameState.ownedItems.push("char_khoi_nguyen_m");
       if (!gameState.ownedItems.includes("char_khoi_nguyen_f")) gameState.ownedItems.push("char_khoi_nguyen_f");
@@ -210,7 +231,8 @@ function getPlayerLevelTitle(highScore) {
 
 // UI Updates
 function updateUIHeader() {
-  document.getElementById("nickname-val").textContent = gameState.nickname;
+  const flagEmoji = getCountryFlag(gameState.country || "vn");
+  document.getElementById("nickname-val").innerHTML = `${gameState.nickname} <span style="font-size: 0.9rem; margin-left: 4px; vertical-align: middle;">${flagEmoji}</span>`;
   document.getElementById("avatar-letter").textContent = gameState.nickname.charAt(0).toUpperCase();
   document.getElementById("gold-val").textContent = gameState.gold;
   
@@ -269,6 +291,7 @@ function showScreen(screenId) {
     document.getElementById("input-volume").value = gameState.volume;
     document.getElementById("volume-val").textContent = gameState.volume + "%";
     document.getElementById("select-language").value = gameState.targetLanguage;
+    document.getElementById("select-country").value = gameState.country || "vn";
   } else if (screenId === "rank") {
     renderLeaderboard("single");
   } else if (screenId === "shop") {
@@ -618,6 +641,13 @@ function setupBattleGame() {
   saveGameData();
   updateUIHeader();
   
+  // Choose random bot country, bot name, and bot character
+  const botNames = ["MegaMind", "QuizBot", "CyberRunner", "AlphaTrivia", "BetaTester", "RoboBrain", "Speedy", "EinsteinBot", "CodeMaster", "ZeroHero"];
+  const botCountries = ["vn", "us", "jp", "kr", "gb", "fr", "de", "br", "ca", "au", "sg", "th"];
+  const randomBotName = botNames[Math.floor(Math.random() * botNames.length)];
+  const randomBotCountry = botCountries[Math.floor(Math.random() * botCountries.length)];
+  const randomBotChar = SHOP_ITEMS.character[Math.floor(Math.random() * SHOP_ITEMS.character.length)];
+
   battleState = {
     currentQuestion: null,
     questionIndex: 0,
@@ -633,8 +663,25 @@ function setupBattleGame() {
     botSelectedIdx: null,
     showAnswerTimeout: null,
     isTranslated: false,
-    botCorrectProbabilities: [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.5, 0.4]
+    botCorrectProbabilities: [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.5, 0.4],
+    botName: randomBotName,
+    botCountry: randomBotCountry,
+    botCharacter: randomBotChar
   };
+  
+  // Render nickname and flags
+  const playerFlag = getCountryFlag(gameState.country || "vn");
+  const botFlag = getCountryFlag(battleState.botCountry);
+
+  const playerTrackNameEl = document.getElementById("player-track-name");
+  const botTrackNameEl = document.getElementById("bot-track-name");
+
+  if (playerTrackNameEl) {
+    playerTrackNameEl.innerHTML = `<span style="margin-right: 6px; font-size: 1.1rem; vertical-align: middle;">${playerFlag}</span>${gameState.nickname}`;
+  }
+  if (botTrackNameEl) {
+    botTrackNameEl.innerHTML = `<span style="margin-right: 6px; font-size: 1.1rem; vertical-align: middle;">${botFlag}</span>${battleState.botName}`;
+  }
   
   showScreen("battle");
   updateRunnerPositions();
@@ -930,11 +977,13 @@ function saveSettings() {
   const nicknameInput = document.getElementById("input-nickname").value.trim();
   const volumeInput = parseInt(document.getElementById("input-volume").value);
   const selectedLang = document.getElementById("select-language").value;
+  const selectedCountry = document.getElementById("select-country").value;
   
   if (nicknameInput) {
     gameState.nickname = nicknameInput;
   }
   gameState.volume = volumeInput;
+  gameState.country = selectedCountry;
   
   // Check if target language requires Google ML Kit translation model download (30MB)
   if (selectedLang !== "en" && !gameState.downloadedLanguages.includes(selectedLang)) {

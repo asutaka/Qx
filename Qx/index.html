@@ -156,7 +156,7 @@
           <div class="race-lane">
             <div class="race-lane-info">
               <div class="race-runner-avatar" id="bot-runner-avatar">🤖</div>
-              <span class="race-lane-name">Bot</span>
+              <span class="race-lane-name" id="bot-track-name">Bot</span>
               <span class="race-lane-score"><span id="bot-score-val">0</span>/10</span>
             </div>
             <div class="race-track-bar">
@@ -208,6 +208,28 @@
             <label for="input-nickname">NICKNAME</label>
             <input type="text" id="input-nickname" class="input-text" maxlength="15"
               placeholder="Nhập tên người chơi...">
+          </div>
+        </div>
+
+        <!-- Country / Flag Setting -->
+        <div class="settings-group">
+          <div class="settings-title"><i class="fas fa-flag"></i> Quốc Gia</div>
+          <div class="setting-row">
+            <label for="select-country">CHỌN QUỐC GIA</label>
+            <select id="select-country" class="input-text" style="background: rgba(15, 12, 27, 0.8); color: white;">
+              <option value="vn">🇻🇳 Việt Nam</option>
+              <option value="us">🇺🇸 Mỹ (USA)</option>
+              <option value="jp">🇯🇵 Nhật Bản</option>
+              <option value="kr">🇰🇷 Hàn Quốc</option>
+              <option value="gb">🇬🇧 Vương Quốc Anh</option>
+              <option value="fr">🇫🇷 Pháp</option>
+              <option value="de">🇩🇪 Đức</option>
+              <option value="br">🇧🇷 Brazil</option>
+              <option value="ca">🇨🇦 Canada</option>
+              <option value="au">🇦🇺 Úc</option>
+              <option value="sg">🇸🇬 Singapore</option>
+              <option value="th">🇹🇭 Thái Lan</option>
+            </select>
           </div>
         </div>
 
