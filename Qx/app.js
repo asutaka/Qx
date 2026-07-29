@@ -6,6 +6,7 @@ let gameState = {
   singleHighScore: 0,
   volume: 80,
   lastDailyClaim: 0,
+  lastAdClaim: 0,
   currentScreen: "lobby",
   
   // New States: Language & Translation
@@ -262,6 +263,7 @@ function loadGameData() {
       const parsed = JSON.parse(saved);
       gameState = { ...gameState, ...parsed };
       // Safeguard new states
+      if (!gameState.lastAdClaim) gameState.lastAdClaim = 0;
       if (!gameState.downloadedLanguages) gameState.downloadedLanguages = ["en", "vi"];
       if (!gameState.ownedItems) gameState.ownedItems = ["hat_none", "shoes_none", "effect_none", "char_khoi_nguyen_m", "char_khoi_nguyen_f"];
       if (!gameState.equippedHat) gameState.equippedHat = "hat_none";
@@ -375,6 +377,10 @@ function showScreen(screenId) {
   }
 
   // Clear running timers if leaving screens
+  if (screenId !== "lobby" && dailyRewardInterval) {
+    clearInterval(dailyRewardInterval);
+    dailyRewardInterval = null;
+  }
   if (screenId !== "quiz") {
     // Reset any state
   }
@@ -387,20 +393,59 @@ function showScreen(screenId) {
 }
 
 // Daily Reward Logic
+let dailyRewardInterval = null;
+
 function checkDailyRewardButton() {
+  if (dailyRewardInterval) {
+    clearInterval(dailyRewardInterval);
+    dailyRewardInterval = null;
+  }
+
   const now = Date.now();
   const oneDay = 24 * 60 * 60 * 1000;
-  const btn = document.getElementById("claim-daily-btn");
+  const adCooldown = 900 * 1000; // 15 minutes cooldown (900 seconds)
   
-  if (now - gameState.lastDailyClaim < oneDay) {
-    btn.disabled = true;
-    const timeLeft = oneDay - (now - gameState.lastDailyClaim);
-    const hours = Math.floor(timeLeft / (60 * 60 * 1000));
-    const mins = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-    btn.textContent = `Claimed (${hours}h ${mins}m)`;
-  } else {
+  const btn = document.getElementById("claim-daily-btn");
+  const desc = document.querySelector(".daily-reward-banner .reward-text-desc");
+  if (!btn) return;
+  
+  // Reset special class
+  btn.classList.remove("ad-btn-theme");
+
+  if (now - gameState.lastDailyClaim >= oneDay) {
+    // 1. Daily Gift is ready
     btn.disabled = false;
     btn.textContent = "Claim 1,000";
+    btn.setAttribute("onclick", "claimDailyReward()");
+    if (desc) desc.textContent = "Mỗi ngày tặng 1000 vàng";
+  } else {
+    // 2. Daily claimed, check ad reward
+    if (now - (gameState.lastAdClaim || 0) >= adCooldown) {
+      // Ad ready
+      btn.disabled = false;
+      btn.textContent = "Xem QC +500 🎬";
+      btn.classList.add("ad-btn-theme");
+      btn.setAttribute("onclick", "claimAdReward()");
+      if (desc) desc.textContent = "Xem quảng cáo nhận thêm 500 vàng";
+    } else {
+      // Ad on cooldown
+      btn.disabled = true;
+      btn.classList.add("ad-btn-theme");
+      btn.removeAttribute("onclick");
+      
+      const secondsLeft = Math.ceil((adCooldown - (now - gameState.lastAdClaim)) / 1000);
+      let timeText = `${secondsLeft}s`;
+      if (secondsLeft >= 60) {
+        const mins = Math.floor(secondsLeft / 60);
+        const secs = secondsLeft % 60;
+        timeText = `${mins}m ${secs}s`;
+      }
+      btn.textContent = `Xem QC +500 (${timeText})`;
+      if (desc) desc.textContent = "Xem quảng cáo nhận thêm 500 vàng";
+      
+      // Live countdown tick
+      dailyRewardInterval = setInterval(checkDailyRewardButton, 1000);
+    }
   }
 }
 
@@ -413,8 +458,32 @@ function claimDailyReward() {
   checkDailyRewardButton();
   playSound('correct');
   
-  // Show animation or alert
-  alert("You claimed 1,000 Gold Daily Login Bonus!");
+  alert("Bạn đã nhận quà đăng nhập hàng ngày: 1,000 Vàng!");
+}
+
+function claimAdReward() {
+  playSound('click');
+  // Pause any BGM while ad is playing
+  const isPlayingBGM = (bgmInterval !== null);
+  if (isPlayingBGM) stopBGM();
+
+  showSimulatedAd(() => {
+    gameState.gold += 500;
+    gameState.accumulatedGold += 500;
+    gameState.lastAdClaim = Date.now();
+    saveGameData();
+    updateUIHeader();
+    checkDailyRewardButton();
+    playSound('correct');
+    
+    // Resume BGM after ad completes
+    if (isPlayingBGM) {
+      const isBattle = (gameState.currentScreen === "battle");
+      playBGM(isBattle ? "battle" : "lobby");
+    }
+
+    alert("Bạn đã nhận thêm 500 Vàng nhờ xem quảng cáo!");
+  });
 }
 
 // ----------------------------------------------------
