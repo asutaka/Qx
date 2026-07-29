@@ -13,14 +13,35 @@ let gameState = {
   downloadedLanguages: ["en", "vi"], // vi is preloaded
   
   // New States: Shop & Customization
-  ownedItems: ["hat_none", "shoes_none", "effect_none"],
+  ownedItems: ["hat_none", "shoes_none", "effect_none", "char_khoi_nguyen_m", "char_khoi_nguyen_f"],
   equippedHat: "hat_none",
   equippedShoes: "shoes_none",
-  equippedEffect: "effect_none"
+  equippedEffect: "effect_none",
+  equippedCharacter: "char_khoi_nguyen_m"
 };
 
 // Shop Items Database
 const SHOP_ITEMS = {
+  character: [
+    { id: "char_khoi_nguyen_m", name: "Khởi Nguyên Nam 🎩", price: 0, image: "assets/characters/char_khoi_nguyen_m.webp" },
+    { id: "char_khoi_nguyen_f", name: "Khởi Nguyên Nữ 👒", price: 0, image: "assets/characters/char_khoi_nguyen_f.webp" },
+    { id: "char_wukong", name: "Tề Thiên Đại Thánh 🐵👑", price: 2000, image: "assets/characters/char_wukong.webp" },
+    { id: "char_tu_ha", name: "Tử Hà Tiên Tử 🧚‍♀️", price: 1800, image: "assets/characters/char_tu_ha.webp" },
+    { id: "char_am_nguyet_m", name: "Ám Nguyệt Mỹ Nam 🌙", price: 1200, image: "assets/characters/char_am_nguyet_m.webp" },
+    { id: "char_am_nguyet_f", name: "Ám Nguyệt Mỹ Nữ 🌕", price: 1200, image: "assets/characters/char_am_nguyet_f.webp" },
+    { id: "char_hao_nhoang_m", name: "Cực Kỳ Hào Nhoáng Nam ✨", price: 1500, image: "assets/characters/char_hao_nhoang_m.webp" },
+    { id: "char_hao_nhoang_f", name: "Cực Kỳ Hào Nhoáng Nữ 💖", price: 1500, image: "assets/characters/char_hao_nhoang_f.webp" },
+    { id: "char_det_nen_m", name: "Dệt Nền Thời Đại Nam 🧵", price: 1000, image: "assets/characters/char_det_nen_m.webp" },
+    { id: "char_det_nen_f", name: "Dệt Nền Thời Đại Nữ 🪡", price: 1000, image: "assets/characters/char_det_nen_f.webp" },
+    { id: "char_xuat_kich", name: "Đoàn Quân Xuất Kích 🛡️", price: 1500, image: "assets/characters/char_xuat_kich.webp" },
+    { id: "char_lan_m", name: "Múa Lân Nam 🦁", price: 1600, image: "assets/characters/char_lan_m.webp" },
+    { id: "char_lan_f", name: "Múa Lân Nữ 🏮", price: 1600, image: "assets/characters/char_lan_f.webp" },
+    { id: "char_birthday_m", name: "Nam Sinh Nhật 🎂", price: 800, image: "assets/characters/char_birthday_m.webp" },
+    { id: "char_birthday_f", name: "Nữ Sinh Nhật 🎁", price: 800, image: "assets/characters/char_birthday_f.webp" },
+    { id: "char_dun_dun", name: "Đùn Đùn 🐧", price: 1400, image: "assets/characters/char_dun_dun.webp" },
+    { id: "char_noel_m", name: "Tuyết Giáng Sinh Nam ❄️", price: 1000, image: "assets/characters/char_noel_m.webp" },
+    { id: "char_noel_f", name: "Tuyết Giáng Sinh Nữ 🎅", price: 1000, image: "assets/characters/char_noel_f.webp" }
+  ],
   hat: [
     { id: "hat_none", name: "Không đội mũ", price: 0, emoji: "" },
     { id: "hat_cowboy", name: "Mũ Cao Bồi 🤠", price: 500, emoji: "🤠" },
@@ -38,7 +59,7 @@ const SHOP_ITEMS = {
   ]
 };
 
-let currentShopCategory = "hat";
+let currentShopCategory = "character";
 
 // Play State (Single Mode)
 let singleState = {
@@ -157,16 +178,21 @@ function loadGameData() {
       gameState = { ...gameState, ...parsed };
       // Safeguard new states
       if (!gameState.downloadedLanguages) gameState.downloadedLanguages = ["en", "vi"];
-      if (!gameState.ownedItems) gameState.ownedItems = ["hat_none", "shoes_none", "effect_none"];
+      if (!gameState.ownedItems) gameState.ownedItems = ["hat_none", "shoes_none", "effect_none", "char_khoi_nguyen_m", "char_khoi_nguyen_f"];
       if (!gameState.equippedHat) gameState.equippedHat = "hat_none";
       if (!gameState.equippedShoes) gameState.equippedShoes = "shoes_none";
       if (!gameState.equippedEffect) gameState.equippedEffect = "effect_none";
+      if (!gameState.equippedCharacter) gameState.equippedCharacter = "char_khoi_nguyen_m";
       if (!gameState.targetLanguage) gameState.targetLanguage = "en";
+
+      if (!gameState.ownedItems.includes("char_khoi_nguyen_m")) gameState.ownedItems.push("char_khoi_nguyen_m");
+      if (!gameState.ownedItems.includes("char_khoi_nguyen_f")) gameState.ownedItems.push("char_khoi_nguyen_f");
     } catch (e) {
       console.error("Error loading state", e);
     }
   }
   updateUIHeader();
+  updateLobbyCharacter();
 }
 
 function saveGameData() {
@@ -193,6 +219,18 @@ function updateUIHeader() {
   const lvlEl = document.getElementById("user-level-val");
   if (lvlEl) {
     lvlEl.textContent = levelTitle;
+  }
+  updateLobbyCharacter();
+}
+
+function updateLobbyCharacter() {
+  const charImgEl = document.getElementById("lobby-character-img");
+  const charNameEl = document.getElementById("lobby-char-name");
+  
+  if (charImgEl && charNameEl && SHOP_ITEMS.character) {
+    const equipped = SHOP_ITEMS.character.find(c => c.id === gameState.equippedCharacter) || SHOP_ITEMS.character[0];
+    charImgEl.src = equipped.image;
+    charNameEl.textContent = equipped.name;
   }
 }
 
@@ -742,119 +780,67 @@ function triggerAnswerRevelation() {
 }
 
 function updateRunnerPositions() {
-  const playerRunner = document.getElementById("player-runner");
-  const botRunner = document.getElementById("bot-runner");
-  
-  // Custom Visuals based on equipped cosmetics
-  const pAvatar = playerRunner.querySelector(".runner-avatar");
-  
-  let hatEmoji = "";
-  let shoesEmoji = "";
-  let effectEmoji = "";
-  
-  const hatItem = SHOP_ITEMS.hat.find(h => h.id === gameState.equippedHat);
-  const shoesItem = SHOP_ITEMS.shoes.find(s => s.id === gameState.equippedShoes);
-  const effectItem = SHOP_ITEMS.effect.find(e => e.id === gameState.equippedEffect);
-  
-  if (hatItem && hatItem.emoji) hatEmoji = hatItem.emoji;
-  if (shoesItem && shoesItem.emoji) shoesEmoji = shoesItem.emoji;
-  if (effectItem && effectItem.emoji) effectEmoji = effectItem.emoji;
-  
-  // Helper: check if character is already rendered (to avoid unnecessary innerHTML writes that disrupt animation)
-  const pCharExists = pAvatar.querySelector(".character-2d");
-  if (!pCharExists) {
-    pAvatar.innerHTML = `
-      <div class="character-2d state-running chibi-char" id="player-char-2d">
-        <div class="char-shadow"></div>
-        <div class="char-effect">${effectEmoji}</div>
-        <div class="char-body">
-          <div class="char-leg leg-left">
-            <div class="char-shoe">${shoesEmoji}</div>
-          </div>
-          <div class="char-leg leg-right">
-            <div class="char-shoe">${shoesEmoji}</div>
-          </div>
-          <div class="char-torso"></div>
-          <div class="char-arm arm-left"></div>
-          <div class="char-arm arm-right"></div>
-          <div class="char-head">
-            <div class="chibi-face">
-              <div class="chibi-eye eye-left"><div class="eye-shine"></div></div>
-              <div class="chibi-eye eye-right"><div class="eye-shine"></div></div>
-              <div class="chibi-blush blush-left"></div>
-              <div class="chibi-blush blush-right"></div>
-              <div class="chibi-mouth">◡</div>
-            </div>
-            <div class="char-hat">${hatEmoji}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  } else {
-    // If it exists, make sure the emojis are updated if they changed
-    const hatEl = pAvatar.querySelector(".char-hat");
-    if (hatEl) hatEl.textContent = hatEmoji;
-    const shoesEls = pAvatar.querySelectorAll(".char-shoe");
-    shoesEls.forEach(el => el.textContent = shoesEmoji);
-    const effectEl = pAvatar.querySelector(".char-effect");
-    if (effectEl) effectEl.textContent = effectEmoji;
+  // --- PLAYER ---
+  const playerCharObj = SHOP_ITEMS.character.find(c => c.id === gameState.equippedCharacter) || SHOP_ITEMS.character[0];
+  const playerPct = Math.min(95, (battleState.playerScore / 10) * 95);
+
+  // Update progress fill
+  const pFill = document.getElementById("player-track-fill");
+  if (pFill) pFill.style.width = playerPct + "%";
+
+  // Update runner icon position
+  const pRunner = document.getElementById("player-runner");
+  if (pRunner) pRunner.style.left = playerPct + "%";
+
+  // Update runner avatar with 3D character image
+  const pRunnerImg = document.getElementById("player-runner-img");
+  if (pRunnerImg) {
+    if (!pRunnerImg.querySelector("img")) {
+      pRunnerImg.innerHTML = `<img src="${playerCharObj.image}" alt="Player" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      const img = pRunnerImg.querySelector("img");
+      if (img.src !== playerCharObj.image) img.src = playerCharObj.image;
+    }
   }
 
-  const bAvatar = botRunner ? botRunner.querySelector(".runner-avatar") : null;
-  const bCharExists = bAvatar ? bAvatar.querySelector(".character-2d") : null;
-  if (bAvatar && !bCharExists) {
-    bAvatar.innerHTML = `
-      <div class="character-2d state-running chibi-char chibi-bot" id="bot-char-2d">
-        <div class="char-shadow"></div>
-        <div class="char-body">
-          <div class="char-leg leg-left"></div>
-          <div class="char-leg leg-right"></div>
-          <div class="char-torso"></div>
-          <div class="char-arm arm-left"></div>
-          <div class="char-arm arm-right"></div>
-          <div class="char-head">
-            <div class="chibi-face">
-              <div class="bot-eye eye-left"></div>
-              <div class="bot-eye eye-right"></div>
-              <div class="chibi-blush blush-left" style="background: rgba(0, 210, 255, 0.35);"></div>
-              <div class="chibi-blush blush-right" style="background: rgba(0, 210, 255, 0.35);"></div>
-              <div class="chibi-mouth" style="color: var(--accent-cyan);">◡</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  
-  // Each score gives 10% progress (10 questions max)
-  const playerPct = Math.min(100, (battleState.playerScore / 10) * 100);
-  const botPct = Math.min(100, (battleState.botScore / 10) * 100);
-  
-  // Position runners relative to the new runner-lane boundaries
-  playerRunner.style.left = `${playerPct}%`;
-  botRunner.style.left = `${botPct}%`;
-  
-  document.getElementById("player-score-val").textContent = `${battleState.playerScore}/10`;
-  document.getElementById("bot-score-val").textContent = `${battleState.botScore}/10`;
-
-  // Set characters to always run
-  const pChar = pAvatar.querySelector(".character-2d");
-  if (pChar) {
-    pChar.classList.remove("state-standing");
-    pChar.classList.add("state-running");
-  }
-  if (battleState.playerScore > battleState.prevPlayerScore) {
-    battleState.prevPlayerScore = battleState.playerScore;
+  // Update avatar circle in lane info
+  const pAvatar = document.getElementById("player-runner-avatar");
+  if (pAvatar && !pAvatar.querySelector("img")) {
+    pAvatar.innerHTML = `<img src="${playerCharObj.image}" alt="Player" style="width:100%;height:100%;object-fit:cover;">`;
   }
 
-  const bChar = bAvatar ? bAvatar.querySelector(".character-2d") : null;
-  if (bChar) {
-    bChar.classList.remove("state-standing");
-    bChar.classList.add("state-running");
+  // Update scores
+  document.getElementById("player-score-val").textContent = battleState.playerScore;
+
+  // --- BOT ---
+  const botCharObj = battleState.botCharacter || SHOP_ITEMS.character[2] || SHOP_ITEMS.character[0];
+  const botPct = Math.min(95, (battleState.botScore / 10) * 95);
+
+  const bFill = document.getElementById("bot-track-fill");
+  if (bFill) bFill.style.width = botPct + "%";
+
+  const bRunner = document.getElementById("bot-runner");
+  if (bRunner) bRunner.style.left = botPct + "%";
+
+  const bRunnerImg = document.getElementById("bot-runner-img");
+  if (bRunnerImg) {
+    if (!bRunnerImg.querySelector("img")) {
+      bRunnerImg.innerHTML = `<img src="${botCharObj.image}" alt="Bot" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      const img = bRunnerImg.querySelector("img");
+      if (img.src !== botCharObj.image) img.src = botCharObj.image;
+    }
   }
-  if (battleState.botScore > battleState.prevBotScore) {
-    battleState.prevBotScore = battleState.botScore;
+
+  const bAvatar = document.getElementById("bot-runner-avatar");
+  if (bAvatar && !bAvatar.querySelector("img")) {
+    bAvatar.innerHTML = `<img src="${botCharObj.image}" alt="Bot" style="width:100%;height:100%;object-fit:cover;">`;
   }
+
+  document.getElementById("bot-score-val").textContent = battleState.botScore;
+
+  if (battleState.playerScore > battleState.prevPlayerScore) battleState.prevPlayerScore = battleState.playerScore;
+  if (battleState.botScore    > battleState.prevBotScore)    battleState.prevBotScore    = battleState.botScore;
 }
 
 function endBattleGame() {
@@ -1014,11 +1000,13 @@ function switchShopCategory(category) {
   currentShopCategory = category;
   
   // Highlight active tab
-  document.getElementById("shop-tab-hat").classList.remove("active");
-  document.getElementById("shop-tab-shoes").classList.remove("active");
-  document.getElementById("shop-tab-effect").classList.remove("active");
+  ["character", "hat", "shoes", "effect"].forEach(cat => {
+    const tabEl = document.getElementById(`shop-tab-${cat}`);
+    if (tabEl) tabEl.classList.remove("active");
+  });
   
-  document.getElementById(`shop-tab-${category}`).classList.add("active");
+  const activeTab = document.getElementById(`shop-tab-${category}`);
+  if (activeTab) activeTab.classList.add("active");
   
   renderShop();
 }
@@ -1028,38 +1016,41 @@ function renderShop() {
   container.innerHTML = "";
   
   const items = SHOP_ITEMS[currentShopCategory];
+  if (!items) return;
   
   items.forEach(item => {
     const isOwned = gameState.ownedItems.includes(item.id);
     let isEquipped = false;
+    if (currentShopCategory === "character" && gameState.equippedCharacter === item.id) isEquipped = true;
     if (currentShopCategory === "hat" && gameState.equippedHat === item.id) isEquipped = true;
     if (currentShopCategory === "shoes" && gameState.equippedShoes === item.id) isEquipped = true;
     if (currentShopCategory === "effect" && gameState.equippedEffect === item.id) isEquipped = true;
     
     let btnHtml = "";
-    if (item.price === 0) {
+    if (item.price === 0 || isOwned) {
       if (isEquipped) {
-        btnHtml = `<button class="reward-btn" style="background:#3a3845; color:var(--text-secondary);" disabled>Equipped</button>`;
+        btnHtml = `<button class="reward-btn" style="background:#3a3845; color:var(--text-secondary);" disabled>Đã Trang Bị</button>`;
       } else {
-        btnHtml = `<button class="reward-btn" onclick="equipShopItem('${item.id}', '${currentShopCategory}')">Equip</button>`;
-      }
-    } else if (isOwned) {
-      if (isEquipped) {
-        btnHtml = `<button class="reward-btn" style="background:#3a3845; color:var(--text-secondary);" disabled>Equipped</button>`;
-      } else {
-        btnHtml = `<button class="reward-btn" onclick="equipShopItem('${item.id}', '${currentShopCategory}')">Equip</button>`;
+        btnHtml = `<button class="reward-btn" onclick="equipShopItem('${item.id}', '${currentShopCategory}')">Trang Bị</button>`;
       }
     } else {
       btnHtml = `<button class="reward-btn" onclick="buyShopItem('${item.id}', '${currentShopCategory}', ${item.price})"><i class="fas fa-coins"></i> ${item.price}</button>`;
     }
     
+    let previewContent = "";
+    if (currentShopCategory === "character") {
+      previewContent = `<img src="${item.image}" alt="${item.name}" class="shop-char-thumb">`;
+    } else {
+      previewContent = `<span style="font-size: 1.8rem; width: 45px; text-align: center;">${item.emoji || "❌"}</span>`;
+    }
+    
     container.innerHTML += `
-      <div class="leaderboard-item">
+      <div class="leaderboard-item shop-card-item">
         <div class="leaderboard-left">
-          <span style="font-size: 1.8rem; width: 40px; text-align: center;">${item.emoji || "❌"}</span>
+          ${previewContent}
           <div style="display: flex; flex-direction: column;">
             <span class="rank-name">${item.name}</span>
-            <span style="font-size: 0.75rem; color: var(--text-secondary);">${isOwned ? 'Đã sở hữu' : 'Chưa sở hữu'}</span>
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">${isOwned || item.price === 0 ? 'Đã sở hữu' : 'Chưa sở hữu'}</span>
           </div>
         </div>
         ${btnHtml}
@@ -1081,16 +1072,18 @@ function buyShopItem(itemId, category, price) {
   saveGameData();
   updateUIHeader();
   renderShop();
-  alert(`Đã mua thành công: ${itemId}!`);
+  alert(`Đã mua thành công vật phẩm!`);
 }
 
 function equipShopItem(itemId, category) {
   playSound('click');
+  if (category === "character") gameState.equippedCharacter = itemId;
   if (category === "hat") gameState.equippedHat = itemId;
   if (category === "shoes") gameState.equippedShoes = itemId;
   if (category === "effect") gameState.equippedEffect = itemId;
   
   saveGameData();
+  updateUIHeader();
   renderShop();
 }
 

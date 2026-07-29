@@ -1,0 +1,6 @@
+{
+  "entries": [
+    { "path": "docs/imagegen" },
+    { "path": ".agents/skills/imagegen" }
+  ]
+}

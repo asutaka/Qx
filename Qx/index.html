@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 
 <body>
@@ -45,6 +45,16 @@
         <div class="game-logo-container">
           <h1 class="logo-text">QUIZ ARENA</h1>
           <div class="logo-sub">Speed & Intelligence</div>
+        </div>
+
+        <!-- Lobby Character Showcase -->
+        <div class="lobby-character-preview" onclick="showScreen('shop'); switchShopCategory('character');" title="Nhấp để thay đổi Nhân Vật!">
+          <div class="character-preview-glow"></div>
+          <img id="lobby-character-img" src="assets/characters/char_khoi_nguyen_m.webp" alt="Character" class="lobby-char-3d">
+          <div class="character-preview-label">
+            <i class="fas fa-tshirt" style="color: var(--accent-cyan);"></i>
+            <span id="lobby-char-name">Khởi Nguyên Nam</span>
+          </div>
         </div>
 
         <!-- Mode: Battle Mode -->
@@ -107,73 +117,55 @@
         <button class="btn-secondary" onclick="showScreen('lobby')" style="margin-top: auto;">Rút Lui (Về Sảnh)</button>
       </div>
 
-      <!-- 3. BATTLE SCREEN -->
+      <!-- 3. BATTLE TRACK SCREEN -->
       <div id="battle-screen" class="game-screen battle-screen hidden">
 
-        <!-- Track Visual Racing -->
-        <div class="race-container">
-          <!-- Player Track -->
-          <div class="track">
-            <div class="runner-lane">
-              <div class="track-markers">
-                <div class="track-marker" style="left: 0%"><div class="track-marker-line"></div><span class="track-marker-label">0</span></div>
-                <div class="track-marker" style="left: 10%"><div class="track-marker-line"></div><span class="track-marker-label">10</span></div>
-                <div class="track-marker" style="left: 20%"><div class="track-marker-line"></div><span class="track-marker-label">20</span></div>
-                <div class="track-marker" style="left: 30%"><div class="track-marker-line"></div><span class="track-marker-label">30</span></div>
-                <div class="track-marker" style="left: 40%"><div class="track-marker-line"></div><span class="track-marker-label">40</span></div>
-                <div class="track-marker" style="left: 50%"><div class="track-marker-line"></div><span class="track-marker-label">50</span></div>
-                <div class="track-marker" style="left: 60%"><div class="track-marker-line"></div><span class="track-marker-label">60</span></div>
-                <div class="track-marker" style="left: 70%"><div class="track-marker-line"></div><span class="track-marker-label">70</span></div>
-                <div class="track-marker" style="left: 80%"><div class="track-marker-line"></div><span class="track-marker-label">80</span></div>
-                <div class="track-marker" style="left: 90%"><div class="track-marker-line"></div><span class="track-marker-label">90</span></div>
-              </div>
-              <div class="runner player" id="player-runner" style="left: 0px;">
-                <div class="runner-avatar">🏃‍♂️</div>
-                <div class="runner-label" id="player-track-name">Bạn</div>
-              </div>
-            </div>
-          </div>
-          <!-- Bot Track -->
-          <div class="track">
-            <div class="runner-lane">
-              <div class="track-markers">
-                <div class="track-marker" style="left: 0%"><div class="track-marker-line"></div><span class="track-marker-label">0</span></div>
-                <div class="track-marker" style="left: 10%"><div class="track-marker-line"></div><span class="track-marker-label">10</span></div>
-                <div class="track-marker" style="left: 20%"><div class="track-marker-line"></div><span class="track-marker-label">20</span></div>
-                <div class="track-marker" style="left: 30%"><div class="track-marker-line"></div><span class="track-marker-label">30</span></div>
-                <div class="track-marker" style="left: 40%"><div class="track-marker-line"></div><span class="track-marker-label">40</span></div>
-                <div class="track-marker" style="left: 50%"><div class="track-marker-line"></div><span class="track-marker-label">50</span></div>
-                <div class="track-marker" style="left: 60%"><div class="track-marker-line"></div><span class="track-marker-label">60</span></div>
-                <div class="track-marker" style="left: 70%"><div class="track-marker-line"></div><span class="track-marker-label">70</span></div>
-                <div class="track-marker" style="left: 80%"><div class="track-marker-line"></div><span class="track-marker-label">80</span></div>
-                <div class="track-marker" style="left: 90%"><div class="track-marker-line"></div><span class="track-marker-label">90</span></div>
-              </div>
-              <div class="runner bot" id="bot-runner" style="left: 0px;">
-                <div class="runner-avatar">🤖</div>
-                <div class="runner-label">Bot</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Finish Line flag -->
-          <div class="finish-line"></div>
-        </div>
-
-        <!-- Stats Bar -->
-        <div class="battle-stats">
-          <span id="battle-question-num">Question 1 / 10</span>
-          <div>
-            Tỉ số: <span id="player-score-val" style="color: var(--accent-pink); font-weight: bold;">0/10</span> - <span
-              id="bot-score-val" style="color: var(--text-secondary);">0/10</span>
+        <!-- Stats Bar: Question # + Scores -->
+        <div class="battle-header-bar">
+          <span id="battle-question-num" class="battle-q-num">Câu 1 / 10</span>
+          <div class="battle-timer-display">
+            <span id="timer-sec" style="color: var(--accent-cyan); font-weight:800; font-size:1.1rem;">30</span>s
           </div>
         </div>
 
-        <!-- 30s Timer Indicator -->
+        <!-- Timer Bar -->
         <div class="battle-timer-bar">
           <div class="timer-fill" id="timer-fill-bar"></div>
         </div>
-        <div style="text-align: center; margin-top: -10px; margin-bottom: 15px; font-weight: bold;">
-          Time Remaining: <span id="timer-sec" style="color: var(--accent-cyan);">30</span>s
+
+        <!-- Race Tracks (progress-bar style) -->
+        <div class="race-container">
+          <div class="race-label-top">🏁 ĐƯỜNG ĐUA</div>
+
+          <!-- Player Lane -->
+          <div class="race-lane">
+            <div class="race-lane-info">
+              <div class="race-runner-avatar" id="player-runner-avatar">🏃</div>
+              <span class="race-lane-name" id="player-track-name">Bạn</span>
+              <span class="race-lane-score"><span id="player-score-val">0</span>/10</span>
+            </div>
+            <div class="race-track-bar">
+              <div class="race-track-fill player-fill" id="player-track-fill" style="width:0%"></div>
+              <div class="race-runner-icon" id="player-runner" style="left:0%">
+                <div class="runner-avatar"><div class="runner-avatar-inner" id="player-runner-img">🏃</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bot Lane -->
+          <div class="race-lane">
+            <div class="race-lane-info">
+              <div class="race-runner-avatar" id="bot-runner-avatar">🤖</div>
+              <span class="race-lane-name">Bot</span>
+              <span class="race-lane-score"><span id="bot-score-val">0</span>/10</span>
+            </div>
+            <div class="race-track-bar">
+              <div class="race-track-fill bot-fill" id="bot-track-fill" style="width:0%"></div>
+              <div class="race-runner-icon" id="bot-runner" style="left:0%">
+                <div class="runner-avatar"><div class="runner-avatar-inner" id="bot-runner-img">🤖</div></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Question Box -->
@@ -193,7 +185,8 @@
 
         <!-- Shop Tabs -->
         <div class="rank-tabs" style="margin-bottom: 15px;">
-          <button class="rank-tab-btn active" id="shop-tab-hat" onclick="switchShopCategory('hat')">Mũ</button>
+          <button class="rank-tab-btn active" id="shop-tab-character" onclick="switchShopCategory('character')">Nhân Vật</button>
+          <button class="rank-tab-btn" id="shop-tab-hat" onclick="switchShopCategory('hat')">Mũ</button>
           <button class="rank-tab-btn" id="shop-tab-shoes" onclick="switchShopCategory('shoes')">Giày</button>
           <button class="rank-tab-btn" id="shop-tab-effect" onclick="switchShopCategory('effect')">Hiệu Ứng</button>
         </div>
@@ -371,7 +364,7 @@
 
   <!-- Scripts -->
   <script src="questions.js?v=5"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 
 </html>
