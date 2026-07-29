@@ -1776,3 +1776,37 @@ body::after {
   justify-content: center;
   box-shadow: 0 0 5px rgba(0, 210, 255, 0.2);
 }
+
+/* Animated Trail Effects */
+.effect-fire-anim {
+  animation: fireFlicker 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes fireFlicker {
+  0% { transform: translate(-50%, 0) scale(1) rotate(-5deg); opacity: 0.8; }
+  100% { transform: translate(-50%, -2px) scale(1.2) rotate(5deg); opacity: 1; filter: drop-shadow(0 0 5px #ff2e93); }
+}
+
+.effect-rainbow-anim {
+  animation: rainbowPulse 1s infinite alternate ease-in-out;
+}
+
+@keyframes rainbowPulse {
+  0% { transform: translate(-50%, 0) scale(1); filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); }
+  100% { transform: translate(-50%, 1px) scale(1.15); filter: drop-shadow(0 0 8px #00d2ff); }
+}
+
+/* Center cosmetic items on runner icon */
+.char-hat-3d {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.char-shoes-3d {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.char-effect-3d {
+  left: 50% !important;
+}

@@ -116,29 +116,94 @@ let battleState = {
 
 // Mock Leaderboards
 const mockSingleRank = [
-  { nickname: "ProQuizzer", score: 87 },
-  { nickname: "TriviaGod", score: 75 },
-  { nickname: "Brainiac_99", score: 62 },
-  { nickname: "MasterMind", score: 50 },
-  { nickname: "NoobPlayer", score: 12 }
+  { nickname: "ProQuizzer", score: 87, country: "us" },
+  { nickname: "TriviaGod", score: 75, country: "jp" },
+  { nickname: "Brainiac_99", score: 62, country: "kr" },
+  { nickname: "MasterMind", score: 50, country: "gb" },
+  { nickname: "NoobPlayer", score: 12, country: "br" }
 ];
 
 const mockGoldRank = [
-  { nickname: "GoldHoarder", gold: 15200 },
-  { nickname: "BetKing", gold: 12000 },
-  { nickname: "TriviaGod", gold: 9800 },
-  { nickname: "LuckyCharms", gold: 7500 },
-  { nickname: "RichieRich", gold: 5000 }
+  { nickname: "GoldHoarder", gold: 15200, country: "sg" },
+  { nickname: "BetKing", gold: 12000, country: "th" },
+  { nickname: "TriviaGod", gold: 9800, country: "jp" },
+  { nickname: "LuckyCharms", gold: 7500, country: "ca" },
+  { nickname: "RichieRich", gold: 5000, country: "au" }
 ];
 
 // Sound Synthesizer (Web Audio API)
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
+let bgmInterval = null;
+let bgmSynthNodes = [];
+
 function initAudio() {
   if (!audioCtx) {
     audioCtx = new AudioCtx();
   }
+}
+
+function stopBGM() {
+  if (bgmInterval) {
+    clearInterval(bgmInterval);
+    bgmInterval = null;
+  }
+  bgmSynthNodes.forEach(node => {
+    try { node.stop(); } catch(e) {}
+  });
+  bgmSynthNodes = [];
+}
+
+function playBGM(type) {
+  if (gameState.volume === 0) return;
+  stopBGM();
+  initAudio();
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  const tempo = type === 'battle' ? 120 : 90; // beats per minute
+  const stepTime = 60 / tempo / 2; // eighth notes
+  
+  // Melody notes frequencies (Lobby: C major chord arpeggio, Battle: A minor dark arpeggio)
+  const lobbyMelody = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63]; // C4, E4, G4, C5, G4, E4
+  const battleMelody = [220.00, 261.63, 329.63, 440.00, 329.63, 261.63, 293.66, 349.23]; // A3, C4, E4, A4, E4, C4, D4, F4
+  
+  const notes = type === 'battle' ? battleMelody : lobbyMelody;
+  let index = 0;
+
+  bgmInterval = setInterval(() => {
+    if (gameState.volume === 0 || gameState.currentScreen === "quiz") {
+      stopBGM();
+      return;
+    }
+    
+    // Create oscillator
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(notes[index], audioCtx.currentTime);
+    
+    // Very quiet arpeggio
+    const vol = (gameState.volume / 100) * 0.015;
+    gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + stepTime - 0.02);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + stepTime);
+    
+    bgmSynthNodes.push(osc);
+    if (bgmSynthNodes.length > 10) {
+      bgmSynthNodes.shift();
+    }
+    
+    index = (index + 1) % notes.length;
+  }, stepTime * 1000);
 }
 
 function playSound(type) {
@@ -260,6 +325,17 @@ function updateLobbyCharacter() {
 function showScreen(screenId) {
   playSound('click');
   
+  // BGM triggers
+  if (screenId === "lobby" || screenId === "shop" || screenId === "settings" || screenId === "rank") {
+    if (gameState.currentScreen === "battle" || gameState.currentScreen === "quiz" || !bgmInterval) {
+      playBGM("lobby");
+    }
+  } else if (screenId === "battle") {
+    playBGM("battle");
+  } else {
+    stopBGM();
+  }
+
   // Hide topbar (header) and bottombar (footer) in single mode (quiz) and battle mode
   const header = document.querySelector(".game-header");
   const footer = document.querySelector(".game-footer");
@@ -648,6 +724,14 @@ function setupBattleGame() {
   const randomBotCountry = botCountries[Math.floor(Math.random() * botCountries.length)];
   const randomBotChar = SHOP_ITEMS.character[Math.floor(Math.random() * SHOP_ITEMS.character.length)];
 
+  // Random bot cosmetics
+  const botHats = SHOP_ITEMS.hat;
+  const botShoesList = SHOP_ITEMS.shoes;
+  const botEffects = SHOP_ITEMS.effect;
+  const randomBotHat = botHats[Math.floor(Math.random() * botHats.length)].id;
+  const randomBotShoes = botShoesList[Math.floor(Math.random() * botShoesList.length)].id;
+  const randomBotEffect = botEffects[Math.floor(Math.random() * botEffects.length)].id;
+
   battleState = {
     currentQuestion: null,
     questionIndex: 0,
@@ -666,7 +750,10 @@ function setupBattleGame() {
     botCorrectProbabilities: [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.5, 0.4],
     botName: randomBotName,
     botCountry: randomBotCountry,
-    botCharacter: randomBotChar
+    botCharacter: randomBotChar,
+    botHat: randomBotHat,
+    botShoes: randomBotShoes,
+    botEffect: randomBotEffect
   };
   
   // Render nickname and flags
@@ -826,6 +913,58 @@ function triggerAnswerRevelation() {
   }, 1000);
 }
 
+function renderRunnerCosmetics(runnerEl, hatId, shoesId, effectId) {
+  // Find and remove existing cosmetic elements
+  runnerEl.querySelectorAll(".char-hat-3d, .char-shoes-3d, .char-effect-3d").forEach(el => el.remove());
+  
+  // Find the avatar container
+  const avatarContainer = runnerEl.querySelector(".runner-avatar");
+  if (!avatarContainer) return;
+  
+  // Reset avatar shadow
+  avatarContainer.style.boxShadow = "";
+  
+  // 1. Render Hat
+  if (hatId && hatId !== "hat_none") {
+    const hatItem = SHOP_ITEMS.hat.find(h => h.id === hatId);
+    if (hatItem && hatItem.emoji) {
+      const hatEl = document.createElement("span");
+      hatEl.className = "char-hat-3d";
+      hatEl.textContent = hatItem.emoji;
+      runnerEl.appendChild(hatEl);
+    }
+  }
+  
+  // 2. Render Shoes
+  if (shoesId && shoesId !== "shoes_none") {
+    const shoesItem = SHOP_ITEMS.shoes.find(s => s.id === shoesId);
+    if (shoesItem && shoesItem.emoji) {
+      const shoesEl = document.createElement("span");
+      shoesEl.className = "char-shoes-3d";
+      shoesEl.textContent = shoesItem.emoji;
+      runnerEl.appendChild(shoesEl);
+    }
+  }
+  
+  // 3. Render Effect
+  if (effectId && effectId !== "effect_none") {
+    const effectItem = SHOP_ITEMS.effect.find(e => e.id === effectId);
+    if (effectItem && effectItem.emoji) {
+      const effectEl = document.createElement("span");
+      effectEl.className = `char-effect-3d ${effectId === "effect_fire" ? "effect-fire-anim" : "effect-rainbow-anim"}`;
+      effectEl.textContent = effectItem.emoji;
+      runnerEl.appendChild(effectEl);
+      
+      // Add custom box-shadow glow
+      if (effectId === "effect_fire") {
+        avatarContainer.style.boxShadow = "0 0 12px var(--accent-pink)";
+      } else if (effectId === "effect_rainbow") {
+        avatarContainer.style.boxShadow = "0 0 12px var(--accent-cyan)";
+      }
+    }
+  }
+}
+
 function updateRunnerPositions() {
   // --- PLAYER ---
   const playerCharObj = SHOP_ITEMS.character.find(c => c.id === gameState.equippedCharacter) || SHOP_ITEMS.character[0];
@@ -837,7 +976,10 @@ function updateRunnerPositions() {
 
   // Update runner icon position
   const pRunner = document.getElementById("player-runner");
-  if (pRunner) pRunner.style.left = playerPct + "%";
+  if (pRunner) {
+    pRunner.style.left = playerPct + "%";
+    renderRunnerCosmetics(pRunner, gameState.equippedHat, gameState.equippedShoes, gameState.equippedEffect);
+  }
 
   // Update runner avatar with 3D character image
   const pRunnerImg = document.getElementById("player-runner-img");
@@ -867,7 +1009,10 @@ function updateRunnerPositions() {
   if (bFill) bFill.style.width = botPct + "%";
 
   const bRunner = document.getElementById("bot-runner");
-  if (bRunner) bRunner.style.left = botPct + "%";
+  if (bRunner) {
+    bRunner.style.left = botPct + "%";
+    renderRunnerCosmetics(bRunner, battleState.botHat, battleState.botShoes, battleState.botEffect);
+  }
 
   const bRunnerImg = document.getElementById("bot-runner-img");
   if (bRunnerImg) {
@@ -1039,6 +1184,13 @@ function handleVolumeChange(val) {
   gameState.volume = parseInt(val);
   // Do a quick test click sound
   playSound('click');
+  
+  if (gameState.volume === 0) {
+    stopBGM();
+  } else if (!bgmInterval) {
+    const isBattle = (gameState.currentScreen === "battle");
+    playBGM(isBattle ? "battle" : "lobby");
+  }
 }
 
 // ----------------------------------------------------
@@ -1171,10 +1323,14 @@ function renderLeaderboard(type) {
       let rankClass = `rank-number`;
       if (rankNum <= 3) rankClass += ` rank-${rankNum}`;
       
+      const countryCode = isMe ? (gameState.country || "vn") : (item.country || "us");
+      const flagEmoji = getCountryFlag(countryCode);
+      
       list.innerHTML += `
         <div class="leaderboard-item ${isMe ? 'me' : ''}">
           <div class="leaderboard-left">
             <span class="${rankClass}">${rankNum}</span>
+            <span class="country-badge" style="font-size: 0.7rem; padding: 1px 4px; margin-right: 8px;">${flagEmoji}</span>
             <span class="rank-name">${item.nickname} ${isMe ? '(Bạn)' : ''}</span>
           </div>
           <span class="rank-value">${item.score} Correct</span>
@@ -1204,10 +1360,14 @@ function renderLeaderboard(type) {
       let rankClass = `rank-number`;
       if (rankNum <= 3) rankClass += ` rank-${rankNum}`;
       
+      const countryCode = isMe ? (gameState.country || "vn") : (item.country || "us");
+      const flagEmoji = getCountryFlag(countryCode);
+      
       list.innerHTML += `
         <div class="leaderboard-item ${isMe ? 'me' : ''}">
           <div class="leaderboard-left">
             <span class="${rankClass}">${rankNum}</span>
+            <span class="country-badge" style="font-size: 0.7rem; padding: 1px 4px; margin-right: 8px;">${flagEmoji}</span>
             <span class="rank-name">${item.nickname} ${isMe ? '(Bạn)' : ''}</span>
           </div>
           <span class="rank-value"><i class="fas fa-coins text-warning"></i> ${item.gold.toLocaleString()}</span>
