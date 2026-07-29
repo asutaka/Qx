@@ -10,6 +10,7 @@ import '../../data/services/trivia_api_service.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../widgets/runner_widget.dart';
+import '../../data/services/translation_service.dart';
 
 /// Màn hình Đua đối kháng Battle Mode 1v1 (Player vs Bot)
 class BattleScreen extends StatefulWidget {
@@ -47,6 +48,12 @@ class _BattleScreenState extends State<BattleScreen> {
   bool _hasAnswered = false;
   String? _selectedAnswer;
   bool _showingAnswerResult = false;
+
+  // Dịch thuật
+  bool _isTranslating = false;
+  bool _isTranslated = false;
+  String? _translatedQuestion;
+  Map<String, String> _translatedAnswers = {};
 
   @override
   void initState() {
@@ -120,6 +127,56 @@ class _BattleScreenState extends State<BattleScreen> {
     }
   }
 
+  Future<void> _toggleTranslation() async {
+    if (_isTranslated) {
+      setState(() {
+        _isTranslated = false;
+      });
+      return;
+    }
+
+    if (_translatedQuestion != null) {
+      setState(() {
+        _isTranslated = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _isTranslating = true;
+    });
+
+    final currentQuestion = _questions[_currentQuestionIndex];
+    final translator = TranslationService();
+
+    try {
+      final transQ = await translator.translate(currentQuestion.questionText);
+      final Map<String, String> transAns = {};
+      for (final answer in currentQuestion.allAnswers) {
+        final transA = await translator.translate(answer);
+        transAns[answer] = transA;
+      }
+
+      if (mounted) {
+        setState(() {
+          _translatedQuestion = transQ;
+          _translatedAnswers = transAns;
+          _isTranslated = true;
+          _isTranslating = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTranslating = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lỗi kết nối dịch thuật. Vui lòng thử lại!")),
+        );
+      }
+    }
+  }
+
   /// Bắt đầu một vòng câu hỏi mới
   void _startQuestionRound() {
     if (_currentQuestionIndex >= _questions.length || _playerScore >= 10 || _botScore >= 10) {
@@ -132,6 +189,9 @@ class _BattleScreenState extends State<BattleScreen> {
       _hasAnswered = false;
       _selectedAnswer = null;
       _showingAnswerResult = false;
+      _isTranslated = false;
+      _translatedQuestion = null;
+      _translatedAnswers.clear();
     });
 
     // Chạy đếm ngược trả lời câu hỏi
@@ -377,7 +437,31 @@ class _BattleScreenState extends State<BattleScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 16),
+            // 2.5 Translation toggle bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
+                    foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
+                    side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  onPressed: _isTranslating ? null : _toggleTranslation,
+                  icon: _isTranslating
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                        )
+                      : const Icon(Icons.translate, size: 16),
+                  label: Text(_isTranslated ? "Gốc (English)" : "Dịch (Vietnamese)", style: const TextStyle(fontSize: 12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
 
             // 3. Question Card
             Expanded(
@@ -388,7 +472,9 @@ class _BattleScreenState extends State<BattleScreen> {
                     GlassContainer(
                       width: double.infinity,
                       child: Text(
-                        currentQuestion.questionText,
+                        _isTranslated && _translatedQuestion != null
+                            ? _translatedQuestion!
+                            : currentQuestion.questionText,
                         style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.4),
                         textAlign: TextAlign.center,
                       ),
@@ -433,7 +519,12 @@ class _BattleScreenState extends State<BattleScreen> {
                               ),
                             ),
                             onPressed: _showingAnswerResult ? null : () => _selectAnswerOption(option),
-                            child: Text(option, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                            child: Text(
+                               _isTranslated && _translatedAnswers.containsKey(option)
+                                   ? _translatedAnswers[option]!
+                                   : option,
+                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                             ),
                           ),
                         ),
                       );

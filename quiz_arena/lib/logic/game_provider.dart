@@ -86,4 +86,19 @@ class GameProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Cập nhật ngôn ngữ dịch thuật mục tiêu.
+  void updateTargetLanguage(String lang) {
+    _state = _state.copyWith(targetLanguage: lang);
+    notifyListeners();
+  }
+
+  /// Thêm ngôn ngữ vào danh sách gói offline đã tải.
+  void downloadLanguagePackage(String lang) {
+    if (!_state.downloadedLanguages.contains(lang)) {
+      final updatedLangs = List<String>.from(_state.downloadedLanguages)..add(lang);
+      _state = _state.copyWith(downloadedLanguages: updatedLangs);
+      notifyListeners();
+    }
+  }
 }

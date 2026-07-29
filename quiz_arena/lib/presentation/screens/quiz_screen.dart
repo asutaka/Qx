@@ -9,6 +9,7 @@ import '../../data/models/trivia_difficulty.dart';
 import '../../data/services/trivia_api_service.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
+import '../../data/services/translation_service.dart';
 
 /// Màn hình Chơi đơn Single Mode (Ai Là Triệu Phú - 100 câu hỏi khó dần)
 class QuizScreen extends StatefulWidget {
@@ -38,6 +39,12 @@ class _QuizScreenState extends State<QuizScreen> {
   // Quyền cứu trợ 50/50
   bool _is5050Used = false;
   List<String> _hiddenOptions = [];
+
+  // Dịch thuật
+  bool _isTranslating = false;
+  bool _isTranslated = false;
+  String? _translatedQuestion;
+  Map<String, String> _translatedAnswers = {};
 
   @override
   void initState() {
@@ -108,6 +115,9 @@ class _QuizScreenState extends State<QuizScreen> {
       _hasAnswered = false;
       _selectedAnswer = null;
       _showingResult = false;
+      _isTranslated = false;
+      _translatedQuestion = null;
+      _translatedAnswers.clear();
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -120,6 +130,56 @@ class _QuizScreenState extends State<QuizScreen> {
         _handleAnswer(null); // Quá giờ trả lời
       }
     });
+  }
+
+  Future<void> _toggleTranslation() async {
+    if (_isTranslated) {
+      setState(() {
+        _isTranslated = false;
+      });
+      return;
+    }
+
+    if (_translatedQuestion != null) {
+      setState(() {
+        _isTranslated = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _isTranslating = true;
+    });
+
+    final currentQuestion = _questions[_currentIndex];
+    final translator = TranslationService();
+
+    try {
+      final transQ = await translator.translate(currentQuestion.questionText);
+      final Map<String, String> transAns = {};
+      for (final answer in currentQuestion.allAnswers) {
+        final transA = await translator.translate(answer);
+        transAns[answer] = transA;
+      }
+
+      if (mounted) {
+        setState(() {
+          _translatedQuestion = transQ;
+          _translatedAnswers = transAns;
+          _isTranslated = true;
+          _isTranslating = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTranslating = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lỗi kết nối dịch thuật. Vui lòng thử lại!")),
+        );
+      }
+    }
   }
 
   /// Gọi cứu trợ 50/50 (Loại bỏ 2 đáp án sai)
@@ -248,8 +308,27 @@ class _QuizScreenState extends State<QuizScreen> {
 
               // Cứu trợ panel
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // Nút dịch câu hỏi
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
+                      foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
+                      side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
+                    ),
+                    onPressed: _isTranslating ? null : _toggleTranslation,
+                    icon: _isTranslating
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                          )
+                        : const Icon(Icons.translate, size: 18),
+                    label: Text(_isTranslated ? "Gốc (English)" : "Dịch (Vietnamese)"),
+                  ),
+
+                  // Trợ giúp 50/50
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _is5050Used ? Colors.white10 : AppColors.accentCyan.withOpacity(0.2),
@@ -264,14 +343,15 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Question Text
               Expanded(
                 child: Center(
                   child: GlassContainer(
                     width: double.infinity,
                     child: SingleChildScrollView(
                       child: Text(
-                        currentQuestion.questionText,
+                        _isTranslated && _translatedQuestion != null
+                            ? _translatedQuestion!
+                            : currentQuestion.questionText,
                         style: const TextStyle(color: Colors.white, fontSize: 18, height: 1.4),
                         textAlign: TextAlign.center,
                       ),
@@ -329,7 +409,12 @@ class _QuizScreenState extends State<QuizScreen> {
                             ),
                           ),
                           onPressed: (_showingResult || isHidden) ? null : () => _handleAnswer(option),
-                          child: Text(option, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            _isTranslated && _translatedAnswers.containsKey(option)
+                                ? _translatedAnswers[option]!
+                                : option,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                     ),

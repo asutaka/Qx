@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/colors.dart';
@@ -18,6 +19,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _nicknameController = TextEditingController();
   String _selectedCountry = 'vn';
+  String _selectedLanguage = 'en';
   int _volume = 80;
 
   @override
@@ -26,6 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final provider = Provider.of<GameProvider>(context, listen: false);
     _nicknameController.text = provider.state.nickname;
     _selectedCountry = provider.state.country;
+    _selectedLanguage = provider.state.targetLanguage;
     _volume = provider.state.volume;
   }
 
@@ -50,6 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final provider = Provider.of<GameProvider>(context, listen: false);
     provider.updateNickname(_nicknameController.text);
     provider.updateCountry(_selectedCountry);
+    provider.updateTargetLanguage(_selectedLanguage);
     provider.updateVolume(_volume);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -58,8 +62,87 @@ class _SettingsScreenState extends State<SettingsScreen> {
     widget.onBackToLobby();
   }
 
+  Widget _buildPackageDownloadRow(BuildContext context, String langCode, String langName, bool isDownloaded) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(langName, style: const TextStyle(color: Colors.white, fontSize: 13)),
+        isDownloaded
+            ? const Row(
+                children: [
+                  Icon(Icons.check_circle, color: AppColors.correctGreen, size: 16),
+                  SizedBox(width: 4),
+                  Text("Sẵn sàng (Offline)", style: TextStyle(color: AppColors.correctGreen, fontSize: 12)),
+                ],
+              )
+            : ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accentCyan.withOpacity(0.1),
+                  foregroundColor: AppColors.accentCyan,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () => _downloadPackageSimulation(context, langCode),
+                icon: const Icon(Icons.download, size: 14),
+                label: const Text("Tải gói offline", style: TextStyle(fontSize: 11)),
+              ),
+      ],
+    );
+  }
+
+  void _downloadPackageSimulation(BuildContext context, String langCode) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        double progress = 0.0;
+        Timer? dialogTimer;
+        
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            dialogTimer ??= Timer.periodic(const Duration(milliseconds: 300), (t) {
+              if (progress < 1.0) {
+                progress += 0.1;
+                if (progress > 1.0) progress = 1.0;
+                setDialogState(() {});
+              } else {
+                t.cancel();
+                Navigator.of(ctx).pop();
+                final provider = Provider.of<GameProvider>(context, listen: false);
+                provider.downloadLanguagePackage(langCode);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Đã tải thành công gói dịch thuật $langCode offline!")),
+                );
+              }
+            });
+
+            return AlertDialog(
+              backgroundColor: AppColors.bgSecondary,
+              title: const Text("TẢI GÓI DỊCH THUẬT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Đang tải gói dịch thuật offline cho ngôn ngữ $langCode..."),
+                  const SizedBox(height: 16),
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.white10,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
+                  ),
+                  const SizedBox(height: 8),
+                  Text("${(progress * 100).toInt()}%", style: const TextStyle(color: AppColors.accentCyan)),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final gameProvider = Provider.of<GameProvider>(context);
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       body: Container(
@@ -146,6 +229,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 },
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 2.5. Ngôn ngữ dịch thuật (Target Translation Language)
+                      GlassContainer(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("NGÔN NGỮ dịch thuật (Google ML Kit)", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 8),
+                            Theme(
+                              data: Theme.of(context).copyWith(
+                                canvasColor: AppColors.bgSecondary,
+                              ),
+                              child: DropdownButton<String>(
+                                value: _selectedLanguage,
+                                dropdownColor: AppColors.bgSecondary,
+                                style: const TextStyle(color: Colors.white),
+                                isExpanded: true,
+                                underline: Container(height: 1, color: AppColors.cardBorder),
+                                items: const [
+                                  DropdownMenuItem<String>(
+                                    value: 'en',
+                                    child: Text("Tiếng Anh (English) 🇬🇧"),
+                                  ),
+                                  DropdownMenuItem<String>(
+                                    value: 'vi',
+                                    child: Text("Tiếng Việt (Vietnamese) 🇻🇳"),
+                                  ),
+                                ],
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setState(() {
+                                      _selectedLanguage = val;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text("GÓI DỊCH THUẬT OFFLINE", style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 10)),
+                            const SizedBox(height: 8),
+                            _buildPackageDownloadRow(context, "en", "Tiếng Anh 🇬🇧", true),
+                            const SizedBox(height: 8),
+                            _buildPackageDownloadRow(context, "vi", "Tiếng Việt 🇻🇳", gameProvider.state.downloadedLanguages.contains("vi")),
                           ],
                         ),
                       ),
