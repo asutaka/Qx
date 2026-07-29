@@ -29,7 +29,6 @@ class AppShopItems {
     ShopItem(id: "char_lan_f", name: "Múa Lân Nữ 🏮", price: 1600, assetOrEmoji: "assets/characters/char_lan_f.webp"),
     ShopItem(id: "char_birthday_m", name: "Nam Sinh Nhật 🎂", price: 800, assetOrEmoji: "assets/characters/char_birthday_m.webp"),
     ShopItem(id: "char_birthday_f", name: "Nữ Sinh Nhật 🎁", price: 800, assetOrEmoji: "assets/characters/char_birthday_f.webp"),
-    ShopItem(id: "char_dun_dun", name: "Đùn Đùn 🐧", price: 1400, assetOrEmoji: "assets/characters/char_dun_dun.webp"),
     ShopItem(id: "char_noel_m", name: "Tuyết Giáng Sinh Nam ❄️", price: 1000, assetOrEmoji: "assets/characters/char_noel_m.webp"),
     ShopItem(id: "char_noel_f", name: "Tuyết Giáng Sinh Nữ 🎅", price: 1000, assetOrEmoji: "assets/characters/char_noel_f.webp"),
   ];
