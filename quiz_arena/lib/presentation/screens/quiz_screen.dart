@@ -31,7 +31,7 @@ class _QuizScreenState extends State<QuizScreen> {
   int _secondsLeft = 30;
   Timer? _timer;
   
-  // Trợ giúp
+  // Trợ giúp cơ bản
   bool _hasAnswered = false;
   String? _selectedAnswer;
   bool _showingResult = false;
@@ -39,6 +39,12 @@ class _QuizScreenState extends State<QuizScreen> {
   // Quyền cứu trợ 50/50
   bool _is5050Used = false;
   List<String> _hiddenOptions = [];
+
+  // Quyền cứu trợ mới
+  bool _isDoubleAnswerUsed = false; // Đã dùng Trả lời 2 lần chưa
+  bool _isDoubleAnswerActive = false; // Trạng thái đang kích hoạt Double Answer cho câu hiện tại
+  List<String> _wrongGuesses = []; // Danh sách các phương án đoán sai của câu này
+  bool _isChangeQuestionUsed = false; // Đã dùng Đổi câu hỏi chưa
 
   // Dịch thuật
   bool _isTranslating = false;
@@ -108,10 +114,14 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  void _startTimer() {
+  void _startTimer({bool resume = false}) {
     _timer?.cancel();
     setState(() {
-      _secondsLeft = 30;
+      if (!resume) {
+        _secondsLeft = 30;
+        _wrongGuesses.clear();
+        _isDoubleAnswerActive = false;
+      }
       _hasAnswered = false;
       _selectedAnswer = null;
       _showingResult = false;
@@ -200,10 +210,118 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
+  /// Sử dụng quyền Trả lời 2 lần (Xem quảng cáo để kích hoạt)
+  void _useDoubleAnswer() async {
+    if (_isDoubleAnswerUsed || _hasAnswered || _showingResult) return;
+
+    // Tạm dừng thời gian trả lời
+    _timer?.cancel();
+
+    final bool? watched = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const _AdDialog(),
+    );
+
+    if (watched == true) {
+      setState(() {
+        _isDoubleAnswerUsed = true;
+        _isDoubleAnswerActive = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("🎬 Quyền Trả lời 2 lần đã được kích hoạt!"),
+          backgroundColor: AppColors.correctGreen,
+        ),
+      );
+    }
+
+    // Tiếp tục thời gian trả lời
+    _startTimer(resume: true);
+  }
+
+  /// Sử dụng quyền Đổi câu hỏi khác
+  Future<void> _useChangeQuestion() async {
+    if (_isChangeQuestionUsed || _hasAnswered || _showingResult) return;
+
+    _timer?.cancel();
+    setState(() {
+      _isLoading = true;
+    });
+
+    final api = TriviaApiService();
+    TriviaDifficulty difficulty = TriviaDifficulty.easy;
+    if (_score >= 10 && _score < 30) {
+      difficulty = TriviaDifficulty.medium;
+    } else if (_score >= 30) {
+      difficulty = TriviaDifficulty.hard;
+    }
+
+    final data = await api.fetchQuestions(
+      amount: 1,
+      category: TriviaCategory.any,
+      difficulty: difficulty,
+    );
+
+    if (data != null && data['results'] != null && (data['results'] as List).isNotEmpty) {
+      final newQuestion = Question.fromJson(data['results'][0]);
+      setState(() {
+        _questions[_currentIndex] = newQuestion;
+        _isChangeQuestionUsed = true;
+        _hiddenOptions.clear();
+        _wrongGuesses.clear();
+        _isLoading = false;
+      });
+    } else {
+      // Fallback khi lỗi API
+      setState(() {
+        _questions[_currentIndex] = Question(
+          questionText: "Fallback Skipped Question ${_score + 1}: What is the capital of Japan?",
+          correctAnswer: "Tokyo",
+          allAnswers: ["Tokyo", "Seoul", "Beijing", "Bangkok"],
+        );
+        _isChangeQuestionUsed = true;
+        _hiddenOptions.clear();
+        _wrongGuesses.clear();
+        _isLoading = false;
+      });
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("🔄 Đã đổi sang câu hỏi mới!"),
+        backgroundColor: AppColors.correctGreen,
+      ),
+    );
+
+    _startTimer(); // Bắt đầu lại bộ đếm 30 giây cho câu hỏi mới
+  }
+
   void _handleAnswer(String? answer) {
     _timer?.cancel();
     final currentQuestion = _questions[_currentIndex];
     final isCorrect = (answer != null && answer == currentQuestion.correctAnswer);
+
+    // Xử lý quyền Trả lời 2 lần (nếu trả lời sai ở lần đầu)
+    if (!isCorrect && _isDoubleAnswerActive) {
+      setState(() {
+        _isDoubleAnswerActive = false; // Sử dụng cơ hội thứ 2 xong
+        _selectedAnswer = null;
+        if (answer != null) {
+          _wrongGuesses.add(answer);
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("❌ Sai rồi! Bạn còn 1 cơ hội cuối trả lời câu này."),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      _startTimer(resume: true); // Tiếp tục đếm ngược từ số giây còn lại
+      return;
+    }
 
     setState(() {
       _hasAnswered = true;
@@ -241,7 +359,6 @@ class _QuizScreenState extends State<QuizScreen> {
     // Tặng thưởng vàng dựa trên số câu trả lời đúng (1 câu = 10 vàng)
     final rewardGold = _score * 10;
     if (rewardGold > 0) {
-      // Giả lập cộng vàng vào ví
       provider.addGold(rewardGold);
     }
 
@@ -304,18 +421,21 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-              // Cứu trợ panel
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Cứu trợ panel (Wrap) để hiển thị đẹp mắt 4 quyền trợ giúp
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                alignment: WrapAlignment.center,
                 children: [
-                  // Nút dịch câu hỏi
+                  // 1. Nút dịch câu hỏi
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
                       foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
                       side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     ),
                     onPressed: _isTranslating ? null : _toggleTranslation,
                     icon: _isTranslating
@@ -324,24 +444,54 @@ class _QuizScreenState extends State<QuizScreen> {
                             height: 14,
                             child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                           )
-                        : const Icon(Icons.translate, size: 18),
-                    label: Text(_isTranslated ? "Gốc (English)" : "Dịch (Vietnamese)"),
+                        : const Icon(Icons.translate, size: 16),
+                    label: Text(
+                      _isTranslated ? "Gốc (English)" : "Dịch (Việt)",
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
 
-                  // Trợ giúp 50/50
+                  // 2. Trợ giúp 50/50
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _is5050Used ? Colors.white10 : AppColors.accentCyan.withOpacity(0.2),
+                      backgroundColor: _is5050Used ? Colors.white10 : AppColors.accentCyan.withOpacity(0.1),
                       foregroundColor: _is5050Used ? Colors.white30 : AppColors.accentCyan,
                       side: BorderSide(color: _is5050Used ? Colors.transparent : AppColors.accentCyan),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     ),
                     onPressed: _is5050Used ? null : _use5050,
-                    icon: const Icon(Icons.star_half, size: 18),
-                    label: const Text("Trợ giúp 50/50"),
+                    icon: const Icon(Icons.star_half, size: 16),
+                    label: const Text("50/50", style: TextStyle(fontSize: 11)),
+                  ),
+
+                  // 3. Trả lời 2 lần (Xem quảng cáo)
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isDoubleAnswerUsed ? Colors.white10 : Colors.purple.withOpacity(0.1),
+                      foregroundColor: _isDoubleAnswerUsed ? Colors.white30 : Colors.purpleAccent,
+                      side: BorderSide(color: _isDoubleAnswerUsed ? Colors.transparent : Colors.purpleAccent),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    ),
+                    onPressed: _isDoubleAnswerUsed ? null : _useDoubleAnswer,
+                    icon: const Icon(Icons.repeat, size: 16),
+                    label: const Text("Trả lời x2 (QC)", style: TextStyle(fontSize: 11)),
+                  ),
+
+                  // 4. Đổi câu hỏi
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isChangeQuestionUsed ? Colors.white10 : Colors.orange.withOpacity(0.1),
+                      foregroundColor: _isChangeQuestionUsed ? Colors.white30 : Colors.orangeAccent,
+                      side: BorderSide(color: _isChangeQuestionUsed ? Colors.transparent : Colors.orangeAccent),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    ),
+                    onPressed: _isChangeQuestionUsed ? null : _useChangeQuestion,
+                    icon: const Icon(Icons.skip_next, size: 16),
+                    label: const Text("Đổi câu hỏi", style: TextStyle(fontSize: 11)),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               Expanded(
                 child: Center(
@@ -365,6 +515,8 @@ class _QuizScreenState extends State<QuizScreen> {
               ...currentQuestion.allAnswers.map((option) {
                 // Kiểm tra xem đáp án có bị ẩn bởi trợ giúp 50/50 hay không
                 final isHidden = _hiddenOptions.contains(option);
+                // Kiểm tra xem đáp án đã từng bị chọn sai ở lượt đầu (khi dùng Double Answer)
+                final isWrongAttempt = _wrongGuesses.contains(option);
 
                 Color btnColor = AppColors.cardBg;
                 Color txtColor = Colors.white;
@@ -377,6 +529,9 @@ class _QuizScreenState extends State<QuizScreen> {
                     btnColor = AppColors.incorrectRed.withOpacity(0.3);
                     txtColor = AppColors.incorrectRed;
                   }
+                } else if (isWrongAttempt) {
+                  btnColor = AppColors.incorrectRed.withOpacity(0.2);
+                  txtColor = AppColors.incorrectRed;
                 } else if (option == _selectedAnswer) {
                   btnColor = AppColors.accentCyan.withOpacity(0.2);
                   txtColor = AppColors.accentCyan;
@@ -403,12 +558,14 @@ class _QuizScreenState extends State<QuizScreen> {
                               side: BorderSide(
                                 color: _showingResult && option == currentQuestion.correctAnswer
                                     ? AppColors.correctGreen
-                                    : (_selectedAnswer == option ? AppColors.accentCyan : AppColors.cardBorder),
+                                    : (isWrongAttempt
+                                        ? AppColors.incorrectRed
+                                        : (_selectedAnswer == option ? AppColors.accentCyan : AppColors.cardBorder)),
                                 width: 1.5,
                               ),
                             ),
                           ),
-                          onPressed: (_showingResult || isHidden) ? null : () => _handleAnswer(option),
+                          onPressed: (_showingResult || isHidden || isWrongAttempt) ? null : () => _handleAnswer(option),
                           child: Text(
                             _isTranslated && _translatedAnswers.containsKey(option)
                                 ? _translatedAnswers[option]!
@@ -424,6 +581,71 @@ class _QuizScreenState extends State<QuizScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Widget hộp thoại xem quảng cáo giả lập cho quyền Trả lời x2
+class _AdDialog extends StatefulWidget {
+  const _AdDialog({Key? key}) : super(key: key);
+
+  @override
+  State<_AdDialog> createState() => _AdDialogState();
+}
+
+class _AdDialogState extends State<_AdDialog> {
+  int _seconds = 3;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_seconds > 1) {
+        setState(() {
+          _seconds--;
+        });
+      } else {
+        _timer?.cancel();
+        Navigator.of(context).pop(true); // Trả về true báo hiệu đã xem xong
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.bgSecondary,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.play_circle_fill, color: AppColors.accentPink, size: 60),
+          const SizedBox(height: 16),
+          const Text(
+            "🎬 QUẢNG CÁO TÀI TRỢ",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            "Đang xem quảng cáo để kích hoạt quyền Trả lời 2 lần...",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 16),
+          const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentPink)),
+          const SizedBox(height: 12),
+          Text(
+            "Tự động đóng sau $_seconds giây",
+            style: const TextStyle(color: AppColors.accentPink, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
