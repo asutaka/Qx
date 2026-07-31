@@ -2,11 +2,13 @@ class Question {
   final String questionText;
   final String correctAnswer;
   final List<String> allAnswers;
+  final String category;
 
   Question({
     required this.questionText,
     required this.correctAnswer,
     required this.allAnswers,
+    this.category = '',
   });
 
   /// Gán dữ liệu từ JSON API của OTDB và tự động giải mã HTML entities.
@@ -38,6 +40,7 @@ class Question {
             ?.map((e) => decodeHtml(e.toString()))
             .toList() ??
         [];
+    final category = json['category'] ?? '';
 
     // Trộn ngẫu nhiên câu trả lời đúng vào danh sách câu trả lời sai
     final allAnswers = List<String>.from(incorrectAnswers);
@@ -48,6 +51,7 @@ class Question {
       questionText: questionText,
       correctAnswer: correctAnswer,
       allAnswers: allAnswers,
+      category: category,
     );
   }
 }

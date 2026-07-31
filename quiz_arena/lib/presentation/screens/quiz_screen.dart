@@ -64,7 +64,7 @@ class _QuizScreenState extends State<QuizScreen> {
     super.dispose();
   }
 
-  /// Tải câu hỏi thích ứng với mức độ khó tăng dần
+  /// Tải câu hỏi thích ứng với mức độ khó tăng dần (lọc bỏ các câu hỏi về game và phim)
   Future<void> _loadDifficultyQuestions() async {
     setState(() {
       _isLoading = true;
@@ -80,16 +80,40 @@ class _QuizScreenState extends State<QuizScreen> {
       difficulty = TriviaDifficulty.hard;
     }
 
+    // Tải nhiều câu hỏi hơn (ví dụ 30 câu) để có đủ câu sau khi lọc bỏ game/phim
     final data = await api.fetchQuestions(
-      amount: 10,
+      amount: 30,
       category: TriviaCategory.any,
       difficulty: difficulty,
     );
 
     if (data != null && data['results'] != null) {
       final results = data['results'] as List;
+      final allParsed = results.map((q) => Question.fromJson(q)).toList();
+      
+      // Lọc bỏ câu hỏi về phim (film) và game (game, board games, video games)
+      final filtered = allParsed.where((q) {
+        final cat = q.category.toLowerCase();
+        return !cat.contains('film') && !cat.contains('game');
+      }).toList();
+
       setState(() {
-        _questions = results.map((q) => Question.fromJson(q)).toList();
+        // Lấy tối đại 10 câu hỏi hợp lệ
+        _questions = filtered.take(10).toList();
+        
+        // Fallback nếu lọc quá tay không đủ 10 câu
+        if (_questions.length < 10) {
+          final needed = 10 - _questions.length;
+          _questions.addAll(List.generate(
+            needed,
+            (index) => Question(
+              questionText: "Fallback General Question ${_score + _questions.length + 1}: What is 5 + 5?",
+              correctAnswer: "10",
+              allAnswers: ["8", "9", "10", "11"],
+            ),
+          ));
+        }
+
         _currentIndex = 0;
         _isLoading = false;
         _hiddenOptions.clear();
@@ -258,16 +282,30 @@ class _QuizScreenState extends State<QuizScreen> {
       difficulty = TriviaDifficulty.hard;
     }
 
+    // Tải về 10 câu để lọc lấy 1 câu không phải phim/game
     final data = await api.fetchQuestions(
-      amount: 1,
+      amount: 10,
       category: TriviaCategory.any,
       difficulty: difficulty,
     );
 
     if (data != null && data['results'] != null && (data['results'] as List).isNotEmpty) {
-      final newQuestion = Question.fromJson(data['results'][0]);
+      final results = data['results'] as List;
+      final allParsed = results.map((q) => Question.fromJson(q)).toList();
+      
+      // Lọc bỏ phim và game
+      final filtered = allParsed.where((q) {
+        final cat = q.category.toLowerCase();
+        return !cat.contains('film') && !cat.contains('game');
+      }).toList();
+
       setState(() {
-        _questions[_currentIndex] = newQuestion;
+        if (filtered.isNotEmpty) {
+          _questions[_currentIndex] = filtered.first;
+        } else {
+          // Lấy luôn câu đầu tiên nếu bộ 10 câu tải về toàn là game/phim (hiếm gặp)
+          _questions[_currentIndex] = allParsed.first;
+        }
         _isChangeQuestionUsed = true;
         _hiddenOptions.clear();
         _wrongGuesses.clear();

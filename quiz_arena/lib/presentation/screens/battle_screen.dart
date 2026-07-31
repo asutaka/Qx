@@ -97,34 +97,46 @@ class _BattleScreenState extends State<BattleScreen> {
   }
 
   /// Tải câu hỏi từ API OTDB (Không truyền độ khó để tải ngẫu nhiên)
+  /// Tải câu hỏi từ API OTDB (Lọc bỏ các câu hỏi về game và phim)
   Future<void> _loadQuestions() async {
     final api = TriviaApiService();
+    // Tải về 30 câu để đảm bảo đủ câu hỏi sau khi lọc
     final data = await api.fetchQuestions(
-      amount: 10,
+      amount: 30,
       category: TriviaCategory.any,
       difficulty: TriviaDifficulty.any,
     );
 
     if (data != null && data['results'] != null) {
       final results = data['results'] as List;
-      _questions = results.map((q) => Question.fromJson(q)).toList();
+      final allParsed = results.map((q) => Question.fromJson(q)).toList();
+      
+      // Lọc bỏ các câu hỏi về phim (film) và game (game, video games, board games)
+      final filtered = allParsed.where((q) {
+        final cat = q.category.toLowerCase();
+        return !cat.contains('film') && !cat.contains('game');
+      }).toList();
+
+      _questions = filtered.take(10).toList();
+    }
+
+    // Nếu tải lỗi hoặc không đủ câu hỏi sau khi lọc, tự tạo danh sách câu hỏi dự phòng
+    if (_questions.length < 10) {
+      final needed = 10 - _questions.length;
+      final fallbackQuestions = List.generate(
+        needed,
+        (index) => Question(
+          questionText: "Fallback General Question ${_questions.length + index + 1}: What is 10 + 10?",
+          correctAnswer: "20",
+          allAnswers: ["15", "18", "20", "25"],
+        ),
+      );
+      _questions.addAll(fallbackQuestions);
     }
 
     setState(() {
       _isLoading = false;
     });
-
-    // Nếu tải lỗi hoặc không có câu hỏi, tự tạo danh sách câu hỏi dự phòng
-    if (_questions.isEmpty) {
-      _questions = List.generate(
-        10,
-        (index) => Question(
-          questionText: "Placeholder Question ${index + 1}: What is the capital of France?",
-          correctAnswer: "Paris",
-          allAnswers: ["Paris", "London", "Berlin", "Rome"],
-        ),
-      );
-    }
   }
 
   Future<void> _toggleTranslation() async {
