@@ -151,7 +151,19 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
                 // 2. Chế độ chơi Battle Mode Card
                 GestureDetector(
-                  onTap: widget.onStartBattle,
+                  onTap: () {
+                    if (state.gold >= 200) {
+                      gameProvider.deductGold(200);
+                      widget.onStartBattle();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Bạn không đủ 200 Vàng tiền cọc để tham gia Battle Mode!"),
+                          backgroundColor: AppColors.incorrectRed,
+                        ),
+                      );
+                    }
+                  },
                   child: GlassContainer(
                     borderColor: AppColors.accentPink.withOpacity(0.4),
                     child: Row(

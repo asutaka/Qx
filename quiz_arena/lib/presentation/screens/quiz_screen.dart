@@ -242,7 +242,7 @@ class _QuizScreenState extends State<QuizScreen> {
     final rewardGold = _score * 10;
     if (rewardGold > 0) {
       // Giả lập cộng vàng vào ví
-      provider.claimAd(); // Trợ lý nạp thưởng
+      provider.addGold(rewardGold);
     }
 
     showDialog(

@@ -79,6 +79,27 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Khấu trừ vàng (ví dụ: đặt cọc hoặc thanh toán phí).
+  /// Trả về true nếu thành công.
+  bool deductGold(int amount) {
+    if (_state.gold >= amount) {
+      _state = _state.copyWith(gold: _state.gold - amount);
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  /// Cộng thêm vàng cho người chơi.
+  void addGold(int amount) {
+    if (amount <= 0) return;
+    _state = _state.copyWith(
+      gold: _state.gold + amount,
+      accumulatedGold: _state.accumulatedGold + amount,
+    );
+    notifyListeners();
+  }
+
   /// Tăng thêm điểm kỷ lục khi chơi Single Mode.
   void updateHighScore(int score) {
     if (score > _state.singleHighScore) {

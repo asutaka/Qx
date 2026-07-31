@@ -258,14 +258,31 @@ class _BattleScreenState extends State<BattleScreen> {
     _questionTimer?.cancel();
     _botActionTimer?.cancel();
 
-    final isWin = _playerScore > _botScore;
     final provider = Provider.of<GameProvider>(context, listen: false);
+    final int scoreDiff = _playerScore - _botScore;
 
-    // Xử lý thưởng vàng đặt cược
-    if (isWin) {
+    String titleText;
+    Color titleColor;
+    String contentText;
+
+    if (scoreDiff > 0) {
+      // Thắng
+      titleText = "🏆 CHIẾN THẮNG!";
+      titleColor = AppColors.accentCyan;
+      contentText = "Bạn đã vượt qua đối thủ với tỉ số $_playerScore - $_botScore.\nBạn nhận được +400 Vàng!";
       provider.updateHighScore(_playerScore);
-      // Đấu thắng nhận 400 vàng (hoàn cọc 200 + thưởng 200)
-      provider.claimAd(); // Thay đổi nhỏ cộng tiền
+      provider.addGold(400);
+    } else if (scoreDiff < 0) {
+      // Thua
+      titleText = "💀 THẤT BẠI!";
+      titleColor = AppColors.accentPink;
+      contentText = "Bạn đã thua cuộc trước đối thủ với tỉ số $_playerScore - $_botScore.\nBạn bị mất 200 Vàng tiền cọc!";
+    } else {
+      // Hòa
+      titleText = "🤝 HÒA NHAU!";
+      titleColor = AppColors.accentGold;
+      contentText = "Bạn đã hòa với đối thủ với tỉ số $_playerScore - $_botScore.\nMỗi bên mất 10% phí đặt cọc (20 Vàng).\nBạn được nhận lại 180 Vàng!";
+      provider.addGold(180);
     }
 
     showDialog(
@@ -274,13 +291,11 @@ class _BattleScreenState extends State<BattleScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
         title: Text(
-          isWin ? "🏆 CHIẾN THẮNG!" : "💀 THẤT BẠI!",
-          style: TextStyle(color: isWin ? AppColors.accentCyan : AppColors.accentPink, fontWeight: FontWeight.bold),
+          titleText,
+          style: TextStyle(color: titleColor, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          isWin 
-              ? "Bạn đã vượt qua đối thủ với tỉ số $_playerScore - $_botScore.\nBạn nhận được +400 Vàng!"
-              : "Bạn đã thua cuộc trước đối thủ với tỉ số $_playerScore - $_botScore.\nBạn bị mất 200 Vàng tiền cọc!",
+          contentText,
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
@@ -303,6 +318,15 @@ class _BattleScreenState extends State<BattleScreen> {
     }
 
     if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.bgPrimary,
+        body: Center(
+          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentCyan)),
+        ),
+      );
+    }
+
+    if (_currentQuestionIndex >= _questions.length || _playerScore >= 10 || _botScore >= 10) {
       return const Scaffold(
         backgroundColor: AppColors.bgPrimary,
         body: Center(

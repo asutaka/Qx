@@ -5,6 +5,7 @@ import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
+import '../../data/services/translation_service.dart';
 
 /// Màn hình Cài đặt (Settings Screen)
 class SettingsScreen extends StatefulWidget {
@@ -51,14 +52,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _saveSettings(BuildContext context) {
     final provider = Provider.of<GameProvider>(context, listen: false);
+    final String newLanguage = _selectedLanguage;
+
     provider.updateNickname(_nicknameController.text);
     provider.updateCountry(_selectedCountry);
-    provider.updateTargetLanguage(_selectedLanguage);
+    provider.updateTargetLanguage(newLanguage);
     provider.updateVolume(_volume);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Đã lưu các cài đặt thành công!")),
-    );
+    // Bắt đầu tải ngầm gói dịch thuật offline nếu chưa được tải trước đó
+    if (newLanguage != 'en' && !provider.state.downloadedLanguages.contains(newLanguage)) {
+      TranslationService().downloadLanguageModelInBackground(newLanguage, (success) {
+        if (success) {
+          provider.downloadLanguagePackage(newLanguage);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Đã tải ngầm thành công gói dịch thuật $newLanguage offline!"),
+              backgroundColor: AppColors.correctGreen,
+            ),
+          );
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Đã lưu cài đặt và bắt đầu tải ngầm gói dịch thuật offline ở chế độ nền!")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Đã lưu các cài đặt thành công!")),
+      );
+    }
+    
     widget.onBackToLobby();
   }
 
@@ -97,19 +119,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (ctx) {
         double progress = 0.0;
         Timer? dialogTimer;
-        
+        bool isDone = false;
+
+        // Gọi tải gói ngôn ngữ thật từ ML Kit (hoặc API giả lập trên Web)
+        TranslationService().downloadLanguageModelInBackground(langCode, (success) {
+          isDone = true;
+        });
+
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
-            dialogTimer ??= Timer.periodic(const Duration(milliseconds: 300), (t) {
-              if (progress < 1.0) {
-                progress += 0.1;
-                if (progress > 1.0) progress = 1.0;
+            dialogTimer ??= Timer.periodic(const Duration(milliseconds: 200), (t) {
+              if (progress < 0.9) {
+                progress += 0.05;
                 setDialogState(() {});
-              } else {
+              } else if (isDone) {
+                progress = 1.0;
+                setDialogState(() {});
                 t.cancel();
                 Navigator.of(ctx).pop();
+                
                 final provider = Provider.of<GameProvider>(context, listen: false);
                 provider.downloadLanguagePackage(langCode);
+                
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Đã tải thành công gói dịch thuật $langCode offline!")),
                 );
