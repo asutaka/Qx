@@ -1,19 +1,42 @@
 import 'package:flutter/material.dart';
 import '../data/models/game_state.dart';
 import '../core/constants/shop_items.dart';
+import '../data/services/firebase_service.dart';
 
 /// Provider quản lý toàn bộ trạng thái của game (State Management).
-/// Kế thừa ChangeNotifier để tự động thông báo cập nhật giao diện khi dữ liệu thay đổi.
+/// Tích hợp cơ chế tự động đồng bộ hóa lên Cloud Firestore.
 class GameProvider extends ChangeNotifier {
   LocalGameState _state = LocalGameState.defaultState();
   
   LocalGameState get state => _state;
+
+  GameProvider() {
+    _initAndLoadData();
+  }
+
+  /// Tải thông tin tài khoản đã lưu trên Firestore lúc khởi chạy ứng dụng
+  Future<void> _initAndLoadData() async {
+    final cloudState = await FirebaseService().loadGameState();
+    if (cloudState != null) {
+      _state = cloudState;
+      notifyListeners();
+    } else {
+      // Nếu chưa có tài liệu trên Cloud Firestore, khởi tạo tài liệu mới
+      _saveToCloud();
+    }
+  }
+
+  /// Hàm phụ gửi dữ liệu đồng bộ lên Firestore
+  void _saveToCloud() {
+    FirebaseService().saveGameState(_state);
+  }
 
   /// Cập nhật tên hiển thị người chơi.
   void updateNickname(String name) {
     if (name.trim().isNotEmpty) {
       _state = _state.copyWith(nickname: name.trim());
       notifyListeners();
+      _saveToCloud();
     }
   }
 
@@ -21,12 +44,14 @@ class GameProvider extends ChangeNotifier {
   void updateCountry(String countryCode) {
     _state = _state.copyWith(country: countryCode);
     notifyListeners();
+    _saveToCloud();
   }
 
   /// Cập nhật âm lượng nhạc nền/hiệu ứng.
   void updateVolume(int volume) {
     _state = _state.copyWith(volume: volume.clamp(0, 100));
     notifyListeners();
+    _saveToCloud();
   }
 
   /// Thực hiện mua một vật phẩm từ cửa hàng.
@@ -38,6 +63,7 @@ class GameProvider extends ChangeNotifier {
         ownedItems: updatedOwned,
       );
       notifyListeners();
+      _saveToCloud();
       return true;
     }
     return false;
@@ -57,6 +83,7 @@ class GameProvider extends ChangeNotifier {
       _state = _state.copyWith(equippedEffect: itemId);
     }
     notifyListeners();
+    _saveToCloud();
   }
 
   /// Nhận quà đăng nhập hàng ngày (Daily Login Reward).
@@ -67,6 +94,7 @@ class GameProvider extends ChangeNotifier {
       lastDailyClaim: DateTime.now().millisecondsSinceEpoch,
     );
     notifyListeners();
+    _saveToCloud();
   }
 
   /// Nhận quà quảng cáo đếm ngược (Bonus Ad Reward).
@@ -77,6 +105,7 @@ class GameProvider extends ChangeNotifier {
       lastAdClaim: DateTime.now().millisecondsSinceEpoch,
     );
     notifyListeners();
+    _saveToCloud();
   }
 
   /// Khấu trừ vàng (ví dụ: đặt cọc hoặc thanh toán phí).
@@ -85,6 +114,7 @@ class GameProvider extends ChangeNotifier {
     if (_state.gold >= amount) {
       _state = _state.copyWith(gold: _state.gold - amount);
       notifyListeners();
+      _saveToCloud();
       return true;
     }
     return false;
@@ -98,6 +128,7 @@ class GameProvider extends ChangeNotifier {
       accumulatedGold: _state.accumulatedGold + amount,
     );
     notifyListeners();
+    _saveToCloud();
   }
 
   /// Tăng thêm điểm kỷ lục khi chơi Single Mode.
@@ -105,6 +136,7 @@ class GameProvider extends ChangeNotifier {
     if (score > _state.singleHighScore) {
       _state = _state.copyWith(singleHighScore: score);
       notifyListeners();
+      _saveToCloud();
     }
   }
 
@@ -112,6 +144,7 @@ class GameProvider extends ChangeNotifier {
   void updateTargetLanguage(String lang) {
     _state = _state.copyWith(targetLanguage: lang);
     notifyListeners();
+    _saveToCloud();
   }
 
   /// Thêm ngôn ngữ vào danh sách gói offline đã tải.
@@ -120,6 +153,7 @@ class GameProvider extends ChangeNotifier {
       final updatedLangs = List<String>.from(_state.downloadedLanguages)..add(lang);
       _state = _state.copyWith(downloadedLanguages: updatedLangs);
       notifyListeners();
+      _saveToCloud();
     }
   }
 }

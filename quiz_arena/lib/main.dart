@@ -9,7 +9,20 @@ import 'presentation/screens/shop_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/rank_screen.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print("Firebase initialized successfully!");
+  } catch (e) {
+    print("Firebase initialization error (using fallback): $e");
+  }
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => GameProvider(),

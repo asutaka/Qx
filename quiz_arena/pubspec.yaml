@@ -21,6 +21,9 @@ dependencies:
   # API Communication
   http: ^1.1.0
   google_mlkit_translation: 0.13.0
+  firebase_core: ^2.24.2
+  cloud_firestore: ^4.14.0
+  shared_preferences: ^2.2.3
 
   # Local Database
   sqflite: ^2.3.0
