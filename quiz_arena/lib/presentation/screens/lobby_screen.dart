@@ -5,6 +5,7 @@ import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
+import '../../data/services/crazy_games_service.dart';
 
 /// Màn hình Sảnh chính (Lobby Screen) chứa các lựa chọn chế độ chơi và quà tặng.
 class LobbyScreen extends StatefulWidget {
@@ -29,6 +30,7 @@ class LobbyScreen extends StatefulWidget {
 
 class _LobbyScreenState extends State<LobbyScreen> {
   Timer? _countdownTimer;
+  bool _isAdLoading = false;
 
   @override
   void initState() {
@@ -269,15 +271,49 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
-                              onPressed: () {
-                                _showSimulatedAd(btnContext, () {
+                              onPressed: _isAdLoading ? null : () async {
+                                if (mounted) {
+                                  setState(() {
+                                    _isAdLoading = true;
+                                  });
+                                }
+                                ScaffoldMessenger.of(btnContext).showSnackBar(
+                                  const SnackBar(content: Text("Đang tải quảng cáo từ CrazyGames...")),
+                                );
+                                final success = await CrazyGamesService.showAd("rewarded");
+                                if (mounted) {
+                                  setState(() {
+                                    _isAdLoading = false;
+                                  });
+                                }
+                                if (success) {
                                   gameProvider.claimAd();
-                                  ScaffoldMessenger.of(btnContext).showSnackBar(
-                                    const SnackBar(content: Text("Bạn đã nhận thêm 500 Vàng nhờ xem quảng cáo!")),
-                                  );
-                                });
+                                  if (btnContext.mounted) {
+                                    ScaffoldMessenger.of(btnContext).showSnackBar(
+                                      const SnackBar(content: Text("Bạn đã nhận thêm 500 Vàng nhờ xem quảng cáo!")),
+                                    );
+                                  }
+                                } else {
+                                  if (btnContext.mounted) {
+                                    ScaffoldMessenger.of(btnContext).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Quảng cáo bị lỗi hoặc bạn đã đóng quảng cáo sớm!"),
+                                        backgroundColor: AppColors.incorrectRed,
+                                      ),
+                                    );
+                                  }
+                                }
                               },
-                              child: const Text("Xem QC +500 🎬"),
+                              child: _isAdLoading
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text("Xem QC +500 🎬"),
                             ),
                           );
                         } else {

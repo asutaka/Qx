@@ -58,6 +58,30 @@
       }
       return null;
     };
+
+    window.showCrazyAd = function(adType) {
+      return new Promise((resolve, reject) => {
+        if (!crazySdk) {
+          console.log("CrazyGames SDK not initialized. Simulating " + adType + " ad success.");
+          resolve(true);
+          return;
+        }
+        
+        crazySdk.ad.requestAd(adType, {
+          adStarted: () => {
+            console.log(adType + " ad started.");
+          },
+          adFinished: () => {
+            console.log(adType + " ad finished successfully.");
+            resolve(true);
+          },
+          adError: (error) => {
+            console.error(adType + " ad error: ", error);
+            resolve(false);
+          }
+        });
+      });
+    };
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>

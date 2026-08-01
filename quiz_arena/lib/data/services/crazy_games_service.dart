@@ -7,4 +7,9 @@ class CrazyGamesService {
   static Future<String?> getCrazyGamesUserId() async {
     return getCrazyGamesUserIdImpl();
   }
+
+  /// Yêu cầu hiển thị quảng cáo của CrazyGames (adType: "midroll" hoặc "rewarded")
+  static Future<bool> showAd(String adType) async {
+    return showCrazyAdImpl(adType);
+  }
 }

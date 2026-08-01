@@ -2,3 +2,8 @@
 Future<String?> getCrazyGamesUserIdImpl() async {
   return null;
 }
+
+Future<bool> showCrazyAdImpl(String adType) async {
+  // Giả lập quảng cáo thành công trên môi trường local/mobile
+  return true;
+}
