@@ -54,4 +54,14 @@ class Question {
       category: category,
     );
   }
+
+  /// Chuyển đổi đối tượng Question thành Map (JSON) để lưu trữ lên Firestore.
+  Map<String, dynamic> toJson() {
+    return {
+      'question': questionText,
+      'correct_answer': correctAnswer,
+      'incorrect_answers': allAnswers.where((ans) => ans != correctAnswer).toList(),
+      'category': category,
+    };
+  }
 }
