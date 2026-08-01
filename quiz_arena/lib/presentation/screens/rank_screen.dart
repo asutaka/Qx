@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
+import '../../data/services/firebase_service.dart';
 
-/// Màn hình Bảng xếp hạng (Rank / Leaderboard Screen)
+/// Màn hình Bảng xếp hạng (Rank / Leaderboard Screen) kết nối trực tiếp với Firestore
 class RankScreen extends StatefulWidget {
   final VoidCallback onBackToLobby;
 
@@ -17,11 +19,22 @@ class RankScreen extends StatefulWidget {
 
 class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadCurrentUserId();
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    final uId = await FirebaseService().getOrCreateUserId();
+    if (mounted) {
+      setState(() {
+        _currentUserId = uId;
+      });
+    }
   }
 
   @override
@@ -38,34 +51,17 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
     return flags[code.toLowerCase()] ?? '🏳️';
   }
 
+  String _getRankTitle(int score) {
+    if (score >= 90) return 'Phù thủy 🧙‍♂️';
+    if (score >= 75) return 'Nhà thông thái 🧠';
+    if (score >= 55) return 'Chuyên gia 🎓';
+    if (score >= 35) return 'Có hiểu biết 📚';
+    if (score >= 15) return 'Tập sự 🛡️';
+    return 'Newbie 🌱';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final gameProvider = Provider.of<GameProvider>(context);
-    final state = gameProvider.state;
-
-    // Giả lập danh sách Leaderboard
-    final List<Map<String, dynamic>> singleRankList = [
-      {'name': 'Alex 🇺🇸', 'score': 54, 'title': 'Chuyên gia'},
-      {'name': 'Yuki 🇯🇵', 'score': 42, 'title': 'Có hiểu biết'},
-      {'name': state.nickname + ' ' + _getCountryFlag(state.country), 'score': state.singleHighScore, 'title': 'Newbie', 'isMe': true},
-      {'name': 'Min-jun 🇰🇷', 'score': 31, 'title': 'Tập sự'},
-      {'name': 'Hans 🇩🇪', 'score': 18, 'title': 'Tập sự'},
-    ];
-
-    // Sắp xếp lại Single Rank theo điểm số
-    singleRankList.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
-
-    final List<Map<String, dynamic>> goldRankList = [
-      {'name': 'Yuki 🇯🇵', 'gold': 12500, 'title': 'Nhà thông thái'},
-      {'name': 'Alex 🇺🇸', 'gold': 9800, 'title': 'Chuyên gia'},
-      {'name': 'Min-jun 🇰🇷', 'gold': 5000, 'title': 'Có hiểu biết'},
-      {'name': state.nickname + ' ' + _getCountryFlag(state.country), 'gold': state.gold, 'title': 'Newbie', 'isMe': true},
-      {'name': 'Hans 🇩🇪', 'gold': 1800, 'title': 'Tập sự'},
-    ];
-
-    // Sắp xếp lại Gold Rank theo vàng
-    goldRankList.sort((a, b) => (b['gold'] as int).compareTo(a['gold'] as int));
-
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       body: Container(
@@ -113,8 +109,8 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildRankList(singleRankList, "score"),
-                    _buildRankList(goldRankList, "gold"),
+                    _buildLeaderboardTab("singleHighScore"),
+                    _buildLeaderboardTab("gold"),
                   ],
                 ),
               ),
@@ -125,13 +121,73 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildRankList(List<Map<String, dynamic>> ranks, String key) {
+  /// Widget FutureBuilder tải bảng xếp hạng trực tiếp từ Firestore
+  Widget _buildLeaderboardTab(String fieldName) {
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .orderBy(fieldName, descending: true)
+          .limit(20)
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          // Trường hợp thiếu chỉ mục (Index) trên Firestore
+          if (snapshot.error.toString().contains("FAILED_PRECONDITION")) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text(
+                  "Đang khởi tạo chỉ mục Firestore cho Bảng xếp hạng. Vui lòng thử lại sau ít phút!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.accentGold),
+                ),
+              ),
+            );
+          }
+          return Center(
+            child: Text(
+              "Lỗi khi tải bảng xếp hạng: ${snapshot.error}",
+              style: const TextStyle(color: AppColors.incorrectRed),
+            ),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text(
+              "Chưa có dữ liệu xếp hạng.",
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+        return _buildRankList(docs, fieldName);
+      },
+    );
+  }
+
+  /// Hàm xây dựng danh sách Widget xếp hạng thực tế
+  Widget _buildRankList(List<QueryDocumentSnapshot> docs, String key) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: ranks.length,
+      itemCount: docs.length,
       itemBuilder: (context, index) {
-        final entry = ranks[index];
-        final isMe = entry['isMe'] == true;
+        final doc = docs[index];
+        final data = doc.data() as Map<String, dynamic>;
+        final isMe = doc.id == _currentUserId;
+
+        final nickname = data['nickname'] ?? 'Player';
+        final country = data['country'] ?? 'vn';
+        final score = data['singleHighScore'] ?? 0;
+        final gold = data['gold'] ?? 0;
+        final title = _getRankTitle(score);
 
         return GlassContainer(
           margin: const EdgeInsets.only(bottom: 12),
@@ -139,7 +195,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
           backgroundColor: isMe ? AppColors.accentCyan.withOpacity(0.08) : null,
           child: Row(
             children: [
-              // Xếp hạng (Huy chương)
+              // Thứ hạng (Huy chương)
               Container(
                 width: 32,
                 height: 32,
@@ -160,29 +216,38 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 16),
 
-              // Tên & danh hiệu
+              // Tên người chơi & danh hiệu
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      entry['name'],
-                      style: TextStyle(
-                        color: isMe ? AppColors.accentCyan : Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            nickname,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: isMe ? AppColors.accentCyan : Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(_getCountryFlag(country), style: const TextStyle(fontSize: 14)),
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      entry['title'],
+                      title,
                       style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
                     ),
                   ],
                 ),
               ),
 
-              // Điểm số / Vàng
+              // Trực quan hóa giá trị (Vàng / Sao kỉ lục)
               Row(
                 children: [
                   if (key == "gold")
@@ -191,7 +256,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                     const Icon(Icons.star, color: AppColors.accentCyan, size: 16),
                   const SizedBox(width: 4),
                   Text(
-                    "${entry[key]}",
+                    "${key == 'gold' ? gold : score}",
                     style: TextStyle(
                       color: key == "gold" ? AppColors.accentGold : AppColors.accentCyan,
                       fontWeight: FontWeight.bold,

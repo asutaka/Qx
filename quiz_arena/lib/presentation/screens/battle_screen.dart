@@ -973,30 +973,153 @@ class _BattleScreenState extends State<BattleScreen> {
     );
   }
 
+  /// Hủy tìm trận và quay lại sảnh
+  void _cancelMatchmaking() {
+    _matchmakingTimer?.cancel();
+    _roomSubscription?.cancel();
+    if (_isHost && _roomId != null) {
+      FirebaseFirestore.instance.collection('rooms').doc(_roomId).delete().catchError((e) => null);
+    }
+    widget.onBackToLobby();
+  }
+
   /// Trực quan hóa Giao diện Tìm kiếm Đối thủ (Matchmaking)
   Widget _buildMatchmakingView() {
+    final gameProvider = Provider.of<GameProvider>(context);
+    final playerState = gameProvider.state;
+
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.wifi_find, color: AppColors.accentCyan, size: 80),
-              const SizedBox(height: 24),
-              Text(
-                "ĐANG TÌM ĐỐI THỦ...",
-                style: AppTypography.titleStyle.copyWith(fontSize: 20, color: AppColors.accentCyan),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "Trận đấu sẽ bắt đầu sau $_matchmakingSec giây",
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-              ),
-              const SizedBox(height: 40),
-              const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentPink)),
-            ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.bgPrimary, Color(0xFF1B093A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.radar, color: AppColors.accentCyan, size: 70),
+                const SizedBox(height: 16),
+                Text(
+                  "ĐANG TÌM ĐỐI THỦ...",
+                  style: AppTypography.titleStyle.copyWith(fontSize: 24, color: AppColors.accentCyan, letterSpacing: 1.5),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Tự động ghép với Bot sau $_matchmakingSec giây",
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 48),
+
+                // Giao diện Matchup VS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Bạn (Left)
+                    Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.accentCyan.withOpacity(0.1),
+                            border: Border.all(color: AppColors.accentCyan, width: 2),
+                          ),
+                          child: Center(
+                            child: Transform.scale(
+                              scale: 1.2,
+                              child: RunnerWidget(
+                                characterId: playerState.equippedCharacter,
+                                hatId: playerState.equippedHat,
+                                shoesId: playerState.equippedShoes,
+                                effectId: playerState.equippedEffect,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          playerState.nickname,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        const Text("BẠN", style: TextStyle(color: AppColors.accentCyan, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+
+                    // VS Badge (Middle)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.accentPink.withOpacity(0.1),
+                        border: Border.all(color: AppColors.accentPink.withOpacity(0.5), width: 1.5),
+                      ),
+                      child: const Text(
+                        "VS",
+                        style: TextStyle(color: AppColors.accentPink, fontWeight: FontWeight.bold, fontSize: 18, fontStyle: FontStyle.italic),
+                      ),
+                    ),
+
+                    // Đối thủ (Right)
+                    Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.05),
+                            border: Border.all(color: Colors.white24, width: 1.5),
+                          ),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentPink),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          "Đang tìm...",
+                          style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic, fontSize: 14),
+                        ),
+                        const Text("ĐỐI THỦ", style: TextStyle(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 60),
+
+                // Nút Hủy Tìm Trận
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white10,
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white24),
+                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  ),
+                  onPressed: _cancelMatchmaking,
+                  icon: const Icon(Icons.close, size: 16),
+                  label: const Text(
+                    "Hủy tìm trận",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
