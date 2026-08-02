@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/colors.dart';
@@ -379,22 +380,174 @@ class _QuizScreenState extends State<QuizScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardBg,
-        title: const Text("💀 GAME OVER", style: TextStyle(color: AppColors.accentPink, fontWeight: FontWeight.bold)),
-        content: Text(
-          "You answered incorrectly or ran out of time.\nFinal Score: $_score correct answers.\nReward: +$rewardGold Gold!",
-          style: const TextStyle(color: AppColors.textPrimary),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 350),
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: AppColors.cardBorder, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.textPrimary.withOpacity(0.1),
+                  blurRadius: 20,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top Trophy/Game Icon (positive and engaging)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentGold.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.stars_rounded,
+                    color: AppColors.accentGold,
+                    size: 54,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Title
+                Text(
+                  "QUIZ FINISHED!",
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
+                // Friendly status message
+                Text(
+                  "You did a great job! Keep learning and growing.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary.withOpacity(0.6),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Score Box
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Score info
+                      Column(
+                        children: [
+                          Text(
+                            "SCORE",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$_score",
+                            style: TextStyle(
+                              color: AppColors.accentCyan,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      // Divider
+                      Container(
+                        width: 1,
+                        height: 30,
+                        color: AppColors.cardBorder,
+                      ),
+                      
+                      // Reward Gold info
+                      Column(
+                        children: [
+                          Text(
+                            "REWARD",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.monetization_on, color: AppColors.accentGold, size: 20),
+                              const SizedBox(width: 4),
+                              Text(
+                                "+$rewardGold",
+                                style: TextStyle(
+                                  color: AppColors.accentGold,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Back Button (Modern, wide button)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentCyan,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      widget.onBackToLobby();
+                    },
+                    child: const Text(
+                      "Back to Lobby",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              widget.onBackToLobby();
-            },
-            child: const Text("Back to Lobby", style: TextStyle(color: AppColors.accentCyan)),
-          )
-        ],
       ),
     );
   }

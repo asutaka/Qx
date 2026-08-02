@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -346,21 +347,29 @@ class _BattleScreenState extends State<BattleScreen> {
     String titleText;
     Color titleColor;
     String contentText;
+    IconData iconData;
+    Color iconColor;
 
     if (scoreDiff > 0) {
-      titleText = "🏆 CHIẾN THẮNG (ĐỐI THỦ RỜI TRẬN)!";
+      titleText = "VICTORY (OPPONENT LEFT)!";
       titleColor = AppColors.accentCyan;
-      contentText = "Đối thủ đã mất kết nối. Bạn nhận được +400 Vàng!";
+      contentText = "Your opponent has disconnected. You received +400 Gold!";
+      iconData = Icons.emoji_events_rounded;
+      iconColor = AppColors.accentGold;
       provider.updateHighScore(_playerScore);
       provider.addGold(400);
     } else if (scoreDiff < 0) {
-      titleText = "💀 THẤT BẠI!";
+      titleText = "DEFEATED!";
       titleColor = AppColors.accentPink;
-      contentText = "Bạn đã thua cuộc trước đối thủ với tỉ số $_playerScore - $_botScore.\nBạn bị mất 200 Vàng tiền cọc!";
+      contentText = "You lost to your opponent by a score of $_playerScore - $_botScore.\nYou lost the 200 Gold entry deposit!";
+      iconData = Icons.sentiment_very_dissatisfied_rounded;
+      iconColor = AppColors.accentPink;
     } else {
-      titleText = "🤝 HÒA NHAU!";
+      titleText = "DRAW!";
       titleColor = AppColors.accentGold;
-      contentText = "Trận đấu kết thúc do đối thủ rời trận. Điểm số hòa nhau.\nBạn được hoàn lại 180 Vàng!";
+      contentText = "Match ended due to opponent disconnect. It's a draw.\nYou received 180 Gold back!";
+      iconData = Icons.handshake_rounded;
+      iconColor = AppColors.accentGold;
       provider.addGold(180);
     }
 
@@ -371,19 +380,169 @@ class _BattleScreenState extends State<BattleScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardBg,
-        title: Text(titleText, style: TextStyle(color: titleColor, fontWeight: FontWeight.bold)),
-        content: Text(contentText, style: const TextStyle(color: AppColors.textPrimary)),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              widget.onBackToLobby();
-            },
-            child: const Text("Về Sảnh", style: TextStyle(color: AppColors.accentCyan)),
-          )
-        ],
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 350),
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: AppColors.cardBorder, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.textPrimary.withOpacity(0.1),
+                  blurRadius: 20,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top Trophy/Game Icon
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    iconData,
+                    color: iconColor,
+                    size: 54,
+                  ),
+                ),
+                // Title
+                Text(
+                  titleText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: titleColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Friendly status message
+                Text(
+                  contentText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary.withOpacity(0.7),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Score Box
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Score info
+                      Column(
+                        children: [
+                          Text(
+                            "YOUR SCORE",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$_playerScore",
+                            style: TextStyle(
+                              color: AppColors.accentCyan,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      // VS divider
+                      Text(
+                        "VS",
+                        style: TextStyle(
+                          color: AppColors.textPrimary.withOpacity(0.3),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      
+                      // Opponent Score info
+                      Column(
+                        children: [
+                          Text(
+                            "OPP SCORE",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$_botScore",
+                            style: TextStyle(
+                              color: AppColors.accentPink,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Back Button (Modern, wide button)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentCyan,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      widget.onBackToLobby();
+                    },
+                    child: const Text(
+                      "Back to Lobby",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -614,21 +773,29 @@ class _BattleScreenState extends State<BattleScreen> {
     String titleText;
     Color titleColor;
     String contentText;
+    IconData iconData;
+    Color iconColor;
 
     if (scoreDiff > 0) {
-      titleText = "🏆 VICTORY!";
+      titleText = "VICTORY!";
       titleColor = AppColors.accentCyan;
       contentText = "You defeated your opponent by a score of $myScore - $oppScore.\nYou received +400 Gold!";
+      iconData = Icons.emoji_events_rounded;
+      iconColor = AppColors.accentGold;
       provider.updateHighScore(myScore);
       provider.addGold(400);
     } else if (scoreDiff < 0) {
-      titleText = "💀 DEFEATED!";
+      titleText = "DEFEATED!";
       titleColor = AppColors.accentPink;
       contentText = "You lost to your opponent by a score of $myScore - $oppScore.\nYou lost the 200 Gold entry deposit!";
+      iconData = Icons.sentiment_very_dissatisfied_rounded;
+      iconColor = AppColors.accentPink;
     } else {
-      titleText = "🤝 DRAW!";
+      titleText = "DRAW!";
       titleColor = AppColors.accentGold;
       contentText = "It's a draw with a score of $myScore - $oppScore.\nBoth sides pay a 10% fee (20 Gold).\nYou received 180 Gold back!";
+      iconData = Icons.handshake_rounded;
+      iconColor = AppColors.accentGold;
       provider.addGold(180);
     }
 
@@ -642,25 +809,171 @@ class _BattleScreenState extends State<BattleScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardBg,
-        title: Text(
-          titleText,
-          style: TextStyle(color: titleColor, fontWeight: FontWeight.bold),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 350),
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: AppColors.cardBorder, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.textPrimary.withOpacity(0.1),
+                  blurRadius: 20,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top Trophy/Game Icon
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    iconData,
+                    color: iconColor,
+                    size: 54,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Title
+                Text(
+                  titleText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: titleColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Friendly status message
+                Text(
+                  contentText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary.withOpacity(0.7),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Score Box
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Score info
+                      Column(
+                        children: [
+                          Text(
+                            "YOUR SCORE",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$myScore",
+                            style: TextStyle(
+                              color: AppColors.accentCyan,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      // VS divider
+                      Text(
+                        "VS",
+                        style: TextStyle(
+                          color: AppColors.textPrimary.withOpacity(0.3),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      
+                      // Opponent Score info
+                      Column(
+                        children: [
+                          Text(
+                            "OPP SCORE",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$oppScore",
+                            style: TextStyle(
+                              color: AppColors.accentPink,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Back Button (Modern, wide button)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentCyan,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      widget.onBackToLobby();
+                    },
+                    child: const Text(
+                      "Back to Lobby",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        content: Text(
-          contentText,
-          style: const TextStyle(color: AppColors.textPrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              widget.onBackToLobby();
-            },
-            child: const Text("Back to Lobby", style: TextStyle(color: AppColors.accentCyan)),
-          )
-        ],
       ),
     );
   }
@@ -676,46 +989,200 @@ class _BattleScreenState extends State<BattleScreen> {
     String titleText;
     Color titleColor;
     String contentText;
+    IconData iconData;
+    Color iconColor;
 
     if (scoreDiff > 0) {
-      titleText = "🏆 VICTORY!";
+      titleText = "VICTORY!";
       titleColor = AppColors.accentCyan;
       contentText = "You defeated your opponent by a score of $_playerScore - $_botScore.\nYou received +400 Gold!";
+      iconData = Icons.emoji_events_rounded;
+      iconColor = AppColors.accentGold;
       provider.updateHighScore(_playerScore);
       provider.addGold(400);
     } else if (scoreDiff < 0) {
-      titleText = "💀 DEFEATED!";
+      titleText = "DEFEATED!";
       titleColor = AppColors.accentPink;
       contentText = "You lost to your opponent by a score of $_playerScore - $_botScore.\nYou lost the 200 Gold entry deposit!";
+      iconData = Icons.sentiment_very_dissatisfied_rounded;
+      iconColor = AppColors.accentPink;
     } else {
-      titleText = "🤝 DRAW!";
+      titleText = "DRAW!";
       titleColor = AppColors.accentGold;
       contentText = "It's a draw with a score of $_playerScore - $_botScore.\nBoth sides pay a 10% fee (20 Gold).\nYou received 180 Gold back!";
+      iconData = Icons.handshake_rounded;
+      iconColor = AppColors.accentGold;
       provider.addGold(180);
     }
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardBg,
-        title: Text(
-          titleText,
-          style: TextStyle(color: titleColor, fontWeight: FontWeight.bold),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 350),
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: AppColors.cardBorder, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.textPrimary.withOpacity(0.1),
+                  blurRadius: 20,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top Trophy/Game Icon
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    iconData,
+                    color: iconColor,
+                    size: 54,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Title
+                Text(
+                  titleText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: titleColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Friendly status message
+                Text(
+                  contentText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary.withOpacity(0.7),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Score Box
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Score info
+                      Column(
+                        children: [
+                          Text(
+                            "YOUR SCORE",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$_playerScore",
+                            style: TextStyle(
+                              color: AppColors.accentCyan,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      // VS divider
+                      Text(
+                        "VS",
+                        style: TextStyle(
+                          color: AppColors.textPrimary.withOpacity(0.3),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      
+                      // Opponent Score info
+                      Column(
+                        children: [
+                          Text(
+                            "OPP SCORE",
+                            style: TextStyle(
+                              color: AppColors.textPrimary.withOpacity(0.5),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "$_botScore",
+                            style: TextStyle(
+                              color: AppColors.accentPink,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Back Button (Modern, wide button)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentCyan,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      widget.onBackToLobby();
+                    },
+                    child: const Text(
+                      "Back to Lobby",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        content: Text(
-          contentText,
-          style: const TextStyle(color: AppColors.textPrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              widget.onBackToLobby();
-            },
-            child: const Text("Back to Lobby", style: TextStyle(color: AppColors.accentCyan)),
-          )
-        ],
       ),
     );
   }
