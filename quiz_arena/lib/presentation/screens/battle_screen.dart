@@ -748,223 +748,295 @@ class _BattleScreenState extends State<BattleScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // 1. Battle Info Bar (Số câu hỏi + Giây đếm ngược)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Question ${_currentQuestionIndex + 1} / 10", style: AppTypography.subtitleStyle.copyWith(color: Colors.white)),
-                  Text(
-                    "$_secondsLeft s",
-                    style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
-                  ),
-                ],
-              ),
-            ),
-
-            // 2. Race Tracks (Đường đua xe 1v1)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final trackWidth = constraints.maxWidth;
-                  const runnerWidth = 64.0;
-                  
-                  // Tính vị trí left chạy của nhân vật dựa trên điểm số
-                  final playerLeft = (_playerScore / 10.0) * (trackWidth - runnerWidth);
-                  final botLeft = (_botScore / 10.0) * (trackWidth - runnerWidth);
-
-                  return GlassContainer(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("🏁 BATTLE TRACK", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 12),
-
-                        // Làn của người chơi
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(playerState.nickname, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                                Text("$_playerScore/10", style: const TextStyle(color: AppColors.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              height: 60,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.03),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Stack(
-                                children: [
-                                  AnimatedPositioned(
-                                    duration: const Duration(milliseconds: 500),
-                                    left: playerLeft,
-                                    top: 2,
-                                    child: RunnerWidget(
-                                      characterId: playerState.equippedCharacter,
-                                      hatId: playerState.equippedHat,
-                                      shoesId: playerState.equippedShoes,
-                                      effectId: playerState.equippedEffect,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Làn của Bot
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(_opponentName, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                                Text("$_botScore/10", style: TextStyle(color: AppColors.accentPink, fontSize: 12, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              height: 60,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.03),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Stack(
-                                children: [
-                                  AnimatedPositioned(
-                                    duration: const Duration(milliseconds: 500),
-                                    left: botLeft,
-                                    top: 2,
-                                    child: RunnerWidget(
-                                      characterId: _opponentCharId,
-                                      hatId: _opponentHatId,
-                                      shoesId: _opponentShoesId,
-                                      effectId: _opponentEffectId,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            // 2.5 Translation toggle bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
-                    foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
-                    side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  onPressed: _isTranslating ? null : _toggleTranslation,
-                  icon: _isTranslating
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                        )
-                      : const Icon(Icons.translate, size: 16),
-                  label: Text(_isTranslated ? "Original (EN)" : "Translate (VN)", style: const TextStyle(fontSize: 12)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // 3. Question Card
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.bgPrimary, Color(0xFF16082C)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 1. Battle Info Bar (Số câu hỏi + Giây đếm ngược)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    GlassContainer(
-                      width: double.infinity,
-                      child: Text(
-                        _isTranslated && _translatedQuestion != null
-                            ? _translatedQuestion!
-                            : currentQuestion.questionText,
-                        style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.4),
-                        textAlign: TextAlign.center,
-                      ),
+                    Text("Question ${_currentQuestionIndex + 1} / 10", style: AppTypography.subtitleStyle.copyWith(color: Colors.white)),
+                    Text(
+                      "$_secondsLeft s",
+                      style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
                     ),
-                    const SizedBox(height: 20),
-
-                    // 4. Options
-                    ...currentQuestion.allAnswers.map((option) {
-                      Color btnColor = AppColors.cardBg;
-                      Color txtColor = Colors.white;
-
-                      if (_showingAnswerResult) {
-                        if (option == currentQuestion.correctAnswer) {
-                          btnColor = AppColors.correctGreen.withOpacity(0.3);
-                          txtColor = AppColors.correctGreen;
-                        } else if (option == _selectedAnswer) {
-                          btnColor = AppColors.incorrectRed.withOpacity(0.3);
-                          txtColor = AppColors.incorrectRed;
-                        }
-                      } else if (option == _selectedAnswer) {
-                        btnColor = AppColors.accentCyan.withOpacity(0.2);
-                        txtColor = AppColors.accentCyan;
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: btnColor,
-                              foregroundColor: txtColor,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                  color: _showingAnswerResult && option == currentQuestion.correctAnswer
-                                      ? AppColors.correctGreen
-                                      : (_selectedAnswer == option ? AppColors.accentCyan : AppColors.cardBorder),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                            onPressed: _showingAnswerResult ? null : () => _selectAnswerOption(option),
-                            child: Text(
-                               _isTranslated && _translatedAnswers.containsKey(option)
-                                   ? _translatedAnswers[option]!
-                                   : option,
-                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                             ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
                   ],
                 ),
               ),
-            ),
-          ],
+
+              // Linear Timer Progress Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: _secondsLeft / 30.0,
+                    backgroundColor: Colors.white10,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _secondsLeft > 10 ? AppColors.accentCyan : AppColors.accentPink,
+                    ),
+                    minHeight: 6,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // 2. Race Tracks (Đường đua xe 1v1)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final trackWidth = constraints.maxWidth;
+                    const runnerWidth = 64.0;
+                    
+                    // Tính vị trí left chạy của nhân vật dựa trên điểm số
+                    final playerLeft = (_playerScore / 10.0) * (trackWidth - runnerWidth);
+                    final botLeft = (_botScore / 10.0) * (trackWidth - runnerWidth);
+
+                    return GlassContainer(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("🏁 BATTLE TRACK", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 12),
+
+                          // Làn của người chơi
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(playerState.nickname, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                  Text("$_playerScore/10", style: const TextStyle(color: AppColors.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                height: 60,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.03),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    AnimatedPositioned(
+                                      duration: const Duration(milliseconds: 500),
+                                      left: playerLeft,
+                                      top: 2,
+                                      child: RunnerWidget(
+                                        characterId: playerState.equippedCharacter,
+                                        hatId: playerState.equippedHat,
+                                        shoesId: playerState.equippedShoes,
+                                        effectId: playerState.equippedEffect,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Làn của Bot
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(_opponentName, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                  Text("$_botScore/10", style: TextStyle(color: AppColors.accentPink, fontSize: 12, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                height: 60,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.03),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    AnimatedPositioned(
+                                      duration: const Duration(milliseconds: 500),
+                                      left: botLeft,
+                                      top: 2,
+                                      child: RunnerWidget(
+                                        characterId: _opponentCharId,
+                                        hatId: _opponentHatId,
+                                        shoesId: _opponentShoesId,
+                                        effectId: _opponentEffectId,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // 2.5 Translation toggle bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
+                      foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
+                      side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onPressed: _isTranslating ? null : _toggleTranslation,
+                    icon: _isTranslating
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                          )
+                        : const Icon(Icons.translate, size: 16),
+                    label: Text(_isTranslated ? "Original (EN)" : "Translate (VN)", style: const TextStyle(fontSize: 12)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // 3. Question Card
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgSecondary.withOpacity(0.85),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.cardBorder.withOpacity(0.5)),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              "QUESTION ${_currentQuestionIndex + 1}",
+                              style: const TextStyle(
+                                color: AppColors.accentCyan,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _isTranslated && _translatedQuestion != null
+                                  ? _translatedQuestion!
+                                  : currentQuestion.questionText,
+                              style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.4, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 4. Options
+                      ...currentQuestion.allAnswers.map((option) {
+                        Color btnColor = AppColors.cardBg;
+                        Color txtColor = Colors.white;
+
+                        if (_showingAnswerResult) {
+                          if (option == currentQuestion.correctAnswer) {
+                            btnColor = AppColors.correctGreen.withOpacity(0.2);
+                            txtColor = AppColors.correctGreen;
+                          } else if (option == _selectedAnswer) {
+                            btnColor = AppColors.incorrectRed.withOpacity(0.2);
+                            txtColor = AppColors.incorrectRed;
+                          }
+                        } else if (option == _selectedAnswer) {
+                          btnColor = AppColors.accentCyan.withOpacity(0.15);
+                          txtColor = AppColors.accentCyan;
+                        }
+
+                        final optionIndex = currentQuestion.allAnswers.indexOf(option);
+                        final optionLetter = optionIndex >= 0 && optionIndex < 4 
+                            ? String.fromCharCode(65 + optionIndex) 
+                            : '?';
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: btnColor,
+                                foregroundColor: txtColor,
+                                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(
+                                    color: _showingAnswerResult && option == currentQuestion.correctAnswer
+                                        ? AppColors.correctGreen
+                                        : (_selectedAnswer == option ? AppColors.accentCyan : AppColors.cardBorder),
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                              onPressed: _showingAnswerResult ? null : () => _selectAnswerOption(option),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white10,
+                                      border: Border.all(color: txtColor.withOpacity(0.3)),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      optionLetter,
+                                      style: TextStyle(color: txtColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _isTranslated && _translatedAnswers.containsKey(option)
+                                          ? _translatedAnswers[option]!
+                                          : option,
+                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

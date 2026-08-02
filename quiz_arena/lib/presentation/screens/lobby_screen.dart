@@ -5,6 +5,7 @@ import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
+import '../widgets/runner_widget.dart';
 import '../../data/services/crazy_games_service.dart';
 
 /// Màn hình Sảnh chính (Lobby Screen) chứa các lựa chọn chế độ chơi và quà tặng.
@@ -58,6 +59,15 @@ class _LobbyScreenState extends State<LobbyScreen> {
     return flags[code.toLowerCase()] ?? '🏳️';
   }
 
+  String _getRankTitle(int score) {
+    if (score >= 90) return 'Wizard 🧙‍♂️';
+    if (score >= 75) return 'Sage 🧠';
+    if (score >= 55) return 'Expert 🎓';
+    if (score >= 35) return 'Knowledgeable 📚';
+    if (score >= 15) return 'Apprentice 🛡️';
+    return 'Newbie 🌱';
+  }
+
   /// Giả lập hiển thị quảng cáo xem thưởng trong 5 giây
   void _showSimulatedAd(BuildContext context, VoidCallback onComplete) {
     showGeneralDialog(
@@ -89,7 +99,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF1E1035)],
+            colors: [AppColors.bgPrimary, Color(0xFF16082C)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -100,19 +110,18 @@ class _LobbyScreenState extends State<LobbyScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 1. Header (Thông tin người chơi)
+                // 1. Header (Thông tin người chơi) - Sticky at top
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: AppColors.accentCyan,
-                          radius: 20,
-                          child: Text(
-                            state.nickname.isNotEmpty ? state.nickname[0].toUpperCase() : 'P',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                          ),
+                        RunnerWidget(
+                          characterId: state.equippedCharacter,
+                          hatId: state.equippedHat,
+                          shoesId: state.equippedShoes,
+                          effectId: state.equippedEffect,
+                          size: 40,
                         ),
                         const SizedBox(width: 8),
                         Column(
@@ -120,12 +129,21 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           children: [
                             Row(
                               children: [
-                                Text(state.nickname, style: AppTypography.subtitleStyle.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                                Text(
+                                  state.nickname, 
+                                  style: AppTypography.subtitleStyle.copyWith(
+                                    color: Colors.white, 
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(_getCountryFlag(state.country), style: const TextStyle(fontSize: 16)),
                               ],
                             ),
-                            const Text("NEWBIE", style: TextStyle(fontSize: 10, color: AppColors.accentCyan, fontWeight: FontWeight.bold)),
+                            Text(
+                              _getRankTitle(state.singleHighScore).toUpperCase(),
+                              style: const TextStyle(fontSize: 10, color: AppColors.accentCyan, fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ],
@@ -135,190 +153,449 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black38,
+                        color: Colors.black45,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.accentGold.withOpacity(0.5)),
+                        border: Border.all(color: AppColors.accentGold, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accentGold.withOpacity(0.2),
+                            blurRadius: 8,
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
                           const Icon(Icons.monetization_on, color: AppColors.accentGold, size: 18),
                           const SizedBox(width: 4),
-                          Text("${state.gold}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          Text(
+                            "${state.gold}", 
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
 
-                // 2. Chế độ chơi Battle Mode Card
-                GestureDetector(
-                  onTap: () {
-                    if (state.gold >= 200) {
-                      gameProvider.deductGold(200);
-                      widget.onStartBattle();
-                    }
-                  },
-                  child: GlassContainer(
-                    borderColor: AppColors.accentPink.withOpacity(0.4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // 2. Scrollable content area
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("BATTLE MODE", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentPink)),
-                              const SizedBox(height: 4),
-                              Text("1v1 Racing Battle (200 Gold Entry Fee)", style: AppTypography.bodyStyle.copyWith(color: AppColors.textSecondary)),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.flash_on, color: AppColors.accentPink, size: 40),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // 3. Chế độ chơi Single Mode Card
-                GestureDetector(
-                  onTap: widget.onStartSingle,
-                  child: GlassContainer(
-                    borderColor: AppColors.accentCyan.withOpacity(0.4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("SINGLE MODE", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
-                              const SizedBox(height: 4),
-                              Text("100 Progressive Questions (Offline / Online)", style: AppTypography.bodyStyle.copyWith(color: AppColors.textSecondary)),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.person, color: AppColors.accentCyan, size: 40),
-                      ],
-                    ),
-                  ),
-                ),
-                const Spacer(),
-
-                // 4. Daily Gift Banner (2 chức năng kết hợp đếm ngược 15 phút)
-                GlassContainer(
-                  borderColor: dailyReady 
-                      ? AppColors.accentGold.withOpacity(0.4) 
-                      : (adReady ? AppColors.accentPink.withOpacity(0.4) : Colors.white10),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.card_giftcard, color: AppColors.accentGold, size: 36),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("Daily Gift", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                            const SizedBox(height: 2),
-                            Text(
-                              dailyReady ? "Get 1,000 gold daily" : "Watch ad to get +500 gold",
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        // Game Billboard / Banner
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              colors: [AppColors.bgSecondary.withOpacity(0.8), Colors.black38],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Nút tương tác
-                      Builder(builder: (btnContext) {
-                        if (dailyReady) {
-                          return ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accentGold,
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                            onPressed: () {
-                              gameProvider.claimDaily();
-                            },
-                            child: const Text("Claim 1,000"),
-                          );
-                        } else if (adReady) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppColors.accentPink, Color(0xFF8A2BE2)],
+                            border: Border.all(color: AppColors.cardBorder.withOpacity(0.6)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                              borderRadius: BorderRadius.circular(10),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accentGold.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.emoji_events, color: AppColors.accentGold, size: 28),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "QUIZ ARENA CHAMPIONS",
+                                      style: AppTypography.titleStyle.copyWith(
+                                        fontSize: 16,
+                                        color: AppColors.accentGold,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "Test your knowledge & run to victory!",
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.7),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Battle Mode Card
+                        GestureDetector(
+                          onTap: () {
+                            if (state.gold >= 200) {
+                              gameProvider.deductGold(200);
+                              widget.onStartBattle();
+                            }
+                          },
+                          child: Container(
+                            height: 120,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFE91E63), Color(0xFF8E24AA)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               boxShadow: [
-                                BoxShadow(color: AppColors.accentPink.withOpacity(0.4), blurRadius: 8),
+                                BoxShadow(
+                                  color: const Color(0xFFE91E63).withOpacity(0.35),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 6),
+                                ),
                               ],
                             ),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              onPressed: _isAdLoading ? null : () async {
-                                if (mounted) {
-                                  setState(() {
-                                    _isAdLoading = true;
-                                  });
-                                }
-                                final success = await CrazyGamesService.showAd("rewarded");
-                                if (mounted) {
-                                  setState(() {
-                                    _isAdLoading = false;
-                                  });
-                                }
-                                if (success) {
-                                  gameProvider.claimAd();
-                                }
-                              },
-                              child: _isAdLoading
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  right: -10,
+                                  bottom: -20,
+                                  child: Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white.withOpacity(0.08),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 16,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white30, width: 2),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            blurRadius: 8,
+                                          ),
+                                        ],
                                       ),
-                                    )
-                                  : const Text("Watch Ad +500 🎬"),
+                                      child: ClipOval(
+                                        child: Image.asset(
+                                          "assets/characters/char_wukong.webp",
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (ctx, err, st) => const Icon(Icons.flash_on, color: Colors.white, size: 40),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black26,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Text(
+                                          "REALTIME PvP",
+                                          style: TextStyle(
+                                            color: Colors.white, 
+                                            fontSize: 9, 
+                                            fontWeight: FontWeight.bold, 
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        "BATTLE MODE",
+                                        style: AppTypography.titleStyle.copyWith(
+                                          fontSize: 22,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w900,
+                                          shadows: const [
+                                            Shadow(color: Colors.black38, offset: Offset(0, 2), blurRadius: 4),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "1v1 Racing Battle (200 Gold Entry Fee)",
+                                        style: AppTypography.bodyStyle.copyWith(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        } else {
-                          // Đếm ngược
-                          final secondsLeft = ((adCooldown - (now - state.lastAdClaim)) / 1000).ceil();
-                          String timeText = "${secondsLeft}s";
-                          if (secondsLeft >= 60) {
-                            final mins = secondsLeft ~/ 60;
-                            final secs = secondsLeft % 60;
-                            timeText = "${mins}m ${secs}s";
-                          }
+                          ),
+                        ),
 
-                          return ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accentPink.withOpacity(0.1),
-                              foregroundColor: Colors.white30,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(color: AppColors.accentPink.withOpacity(0.2)),
+                        // Single Mode Card
+                        GestureDetector(
+                          onTap: widget.onStartSingle,
+                          child: Container(
+                            height: 120,
+                            margin: const EdgeInsets.only(bottom: 20),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF00BCFF), Color(0xFF0056E0)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00BCFF).withOpacity(0.35),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
                             ),
-                            onPressed: null, // Vô hiệu hóa khi đang cooldown
-                            child: Text("Watch Ad +500 ($timeText)", style: const TextStyle(fontSize: 11)),
-                          );
-                        }
-                      }),
-                    ],
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  right: -10,
+                                  bottom: -20,
+                                  child: Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white.withOpacity(0.08),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 16,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white30, width: 2),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipOval(
+                                        child: Image.asset(
+                                          "assets/characters/char_tu_ha.webp",
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (ctx, err, st) => const Icon(Icons.person, color: Colors.white, size: 40),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black26,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Text(
+                                          "CHALLENGE MODE",
+                                          style: TextStyle(
+                                            color: Colors.white, 
+                                            fontSize: 9, 
+                                            fontWeight: FontWeight.bold, 
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        "SINGLE MODE",
+                                        style: AppTypography.titleStyle.copyWith(
+                                          fontSize: 22,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w900,
+                                          shadows: const [
+                                            Shadow(color: Colors.black38, offset: Offset(0, 2), blurRadius: 4),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "100 Progressive Questions (Offline / Online)",
+                                        style: AppTypography.bodyStyle.copyWith(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Daily Gift Banner
+                        GlassContainer(
+                          borderColor: dailyReady 
+                              ? AppColors.accentGold.withOpacity(0.5) 
+                              : (adReady ? AppColors.accentPink.withOpacity(0.5) : Colors.white10),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.card_giftcard, color: AppColors.accentGold, size: 36),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("Daily Gift", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      dailyReady ? "Get 1,000 gold daily" : "Watch ad to get +500 gold",
+                                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              
+                              // Nút tương tác
+                              Builder(builder: (btnContext) {
+                                if (dailyReady) {
+                                  return ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.accentGold,
+                                      foregroundColor: Colors.black,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    ),
+                                    onPressed: () {
+                                      gameProvider.claimDaily();
+                                    },
+                                    child: const Text("Claim 1,000"),
+                                  );
+                                } else if (adReady) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [AppColors.accentPink, Color(0xFF8A2BE2)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(color: AppColors.accentPink.withOpacity(0.4), blurRadius: 8),
+                                      ],
+                                    ),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                      onPressed: _isAdLoading ? null : () async {
+                                        if (mounted) {
+                                          setState(() {
+                                            _isAdLoading = true;
+                                          });
+                                        }
+                                        final success = await CrazyGamesService.showAd("rewarded");
+                                        if (mounted) {
+                                          setState(() {
+                                            _isAdLoading = false;
+                                          });
+                                        }
+                                        if (success) {
+                                          gameProvider.claimAd();
+                                        }
+                                      },
+                                      child: _isAdLoading
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                              ),
+                                            )
+                                          : const Text("Watch Ad +500 🎬"),
+                                    ),
+                                  );
+                                } else {
+                                  // Đếm ngược
+                                  final secondsLeft = ((adCooldown - (now - state.lastAdClaim)) / 1000).ceil();
+                                  String timeText = "${secondsLeft}s";
+                                  if (secondsLeft >= 60) {
+                                    final mins = secondsLeft ~/ 60;
+                                    final secs = secondsLeft % 60;
+                                    timeText = "${mins}m ${secs}s";
+                                  }
+
+                                  return ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.accentPink.withOpacity(0.1),
+                                      foregroundColor: Colors.white30,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        side: BorderSide(color: AppColors.accentPink.withOpacity(0.2)),
+                                      ),
+                                    ),
+                                    onPressed: null, // Vô hiệu hóa khi đang cooldown
+                                    child: Text("Watch Ad +500 ($timeText)", style: const TextStyle(fontSize: 11)),
+                                  );
+                                }
+                              }),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // 5. Bottom Navigation Bar
+                // 3. Bottom Navigation Bar - Sticky at bottom
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [

@@ -414,185 +414,267 @@ class _QuizScreenState extends State<QuizScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: widget.onBackToLobby,
-                  ),
-                  Text("Correct: $_score", style: AppTypography.subtitleStyle.copyWith(color: AppColors.accentGold)),
-                  Text(
-                    "$_secondsLeft s",
-                    style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.bgPrimary, Color(0xFF16082C)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: widget.onBackToLobby,
+                    ),
+                    Text("Correct: $_score", style: AppTypography.subtitleStyle.copyWith(color: AppColors.accentGold)),
+                    Text(
+                      "$_secondsLeft s",
+                      style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
 
-              // Cứu trợ panel (Wrap) để hiển thị đẹp mắt 4 quyền trợ giúp
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                alignment: WrapAlignment.center,
-                children: [
-                  // 1. Nút dịch câu hỏi
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
-                      foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
-                      side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                // Linear Timer Progress Bar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: _secondsLeft / 30.0,
+                    backgroundColor: Colors.white10,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _secondsLeft > 10 ? AppColors.accentCyan : AppColors.accentPink,
                     ),
-                    onPressed: _isTranslating ? null : _toggleTranslation,
-                    icon: _isTranslating
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                          )
-                        : const Icon(Icons.translate, size: 16),
-                    label: Text(
-                      _isTranslated ? "Original (EN)" : "Translate (VN)",
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ),
-
-                  // 2. Trợ giúp 50/50
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _is5050Used ? Colors.white10 : AppColors.accentCyan.withOpacity(0.1),
-                      foregroundColor: _is5050Used ? Colors.white30 : AppColors.accentCyan,
-                      side: BorderSide(color: _is5050Used ? Colors.transparent : AppColors.accentCyan),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    ),
-                    onPressed: _is5050Used ? null : _use5050,
-                    icon: const Icon(Icons.star_half, size: 16),
-                    label: const Text("50/50", style: TextStyle(fontSize: 11)),
-                  ),
-
-                  // 3. Trả lời 2 lần (Xem quảng cáo)
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isDoubleAnswerUsed ? Colors.white10 : Colors.purple.withOpacity(0.1),
-                      foregroundColor: _isDoubleAnswerUsed ? Colors.white30 : Colors.purpleAccent,
-                      side: BorderSide(color: _isDoubleAnswerUsed ? Colors.transparent : Colors.purpleAccent),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    ),
-                    onPressed: _isDoubleAnswerUsed ? null : _useDoubleAnswer,
-                    icon: const Icon(Icons.repeat, size: 16),
-                    label: const Text("Double Ans (Ad)", style: TextStyle(fontSize: 11)),
-                  ),
-
-                  // 4. Đổi câu hỏi
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isChangeQuestionUsed ? Colors.white10 : Colors.orange.withOpacity(0.1),
-                      foregroundColor: _isChangeQuestionUsed ? Colors.white30 : Colors.orangeAccent,
-                      side: BorderSide(color: _isChangeQuestionUsed ? Colors.transparent : Colors.orangeAccent),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    ),
-                    onPressed: _isChangeQuestionUsed ? null : _useChangeQuestion,
-                    icon: const Icon(Icons.skip_next, size: 16),
-                    label: const Text("Skip Question", style: TextStyle(fontSize: 11)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              Expanded(
-                child: Center(
-                  child: GlassContainer(
-                    width: double.infinity,
-                    child: SingleChildScrollView(
-                      child: Text(
-                        _isTranslated && _translatedQuestion != null
-                            ? _translatedQuestion!
-                            : currentQuestion.questionText,
-                        style: const TextStyle(color: Colors.white, fontSize: 18, height: 1.4),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                    minHeight: 6,
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-              // Answers List
-              ...currentQuestion.allAnswers.map((option) {
-                // Kiểm tra xem đáp án có bị ẩn bởi trợ giúp 50/50 hay không
-                final isHidden = _hiddenOptions.contains(option);
-                // Kiểm tra xem đáp án đã từng bị chọn sai ở lượt đầu (khi dùng Double Answer)
-                final isWrongAttempt = _wrongGuesses.contains(option);
+                // Cứu trợ panel (Wrap) để hiển thị đẹp mắt 4 quyền trợ giúp
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    // 1. Nút dịch câu hỏi
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
+                        foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
+                        side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      onPressed: _isTranslating ? null : _toggleTranslation,
+                      icon: _isTranslating
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                            )
+                          : const Icon(Icons.translate, size: 16),
+                      label: Text(
+                        _isTranslated ? "Original (EN)" : "Translate (VN)",
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
 
-                Color btnColor = AppColors.cardBg;
-                Color txtColor = Colors.white;
+                    // 2. Trợ giúp 50/50
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _is5050Used ? Colors.white10 : AppColors.accentCyan.withOpacity(0.1),
+                        foregroundColor: _is5050Used ? Colors.white30 : AppColors.accentCyan,
+                        side: BorderSide(color: _is5050Used ? Colors.transparent : AppColors.accentCyan),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      onPressed: _is5050Used ? null : _use5050,
+                      icon: const Icon(Icons.star_half, size: 16),
+                      label: const Text("50/50", style: TextStyle(fontSize: 11)),
+                    ),
 
-                if (_showingResult) {
-                  if (option == currentQuestion.correctAnswer) {
-                    btnColor = AppColors.correctGreen.withOpacity(0.3);
-                    txtColor = AppColors.correctGreen;
-                  } else if (option == _selectedAnswer) {
-                    btnColor = AppColors.incorrectRed.withOpacity(0.3);
-                    txtColor = AppColors.incorrectRed;
-                  }
-                } else if (isWrongAttempt) {
-                  btnColor = AppColors.incorrectRed.withOpacity(0.2);
-                  txtColor = AppColors.incorrectRed;
-                } else if (option == _selectedAnswer) {
-                  btnColor = AppColors.accentCyan.withOpacity(0.2);
-                  txtColor = AppColors.accentCyan;
-                }
+                    // 3. Trả lời 2 lần (Xem quảng cáo)
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isDoubleAnswerUsed ? Colors.white10 : Colors.purple.withOpacity(0.1),
+                        foregroundColor: _isDoubleAnswerUsed ? Colors.white30 : Colors.purpleAccent,
+                        side: BorderSide(color: _isDoubleAnswerUsed ? Colors.transparent : Colors.purpleAccent),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      onPressed: _isDoubleAnswerUsed ? null : _useDoubleAnswer,
+                      icon: const Icon(Icons.repeat, size: 16),
+                      label: const Text("Double Ans (Ad)", style: TextStyle(fontSize: 11)),
+                    ),
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Visibility(
-                    visible: !isHidden,
-                    maintainState: true,
-                    maintainAnimation: true,
-                    maintainSize: true,
-                    child: Opacity(
-                      opacity: isHidden ? 0.0 : 1.0,
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: btnColor,
-                            foregroundColor: txtColor,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color: _showingResult && option == currentQuestion.correctAnswer
-                                    ? AppColors.correctGreen
-                                    : (isWrongAttempt
-                                        ? AppColors.incorrectRed
-                                        : (_selectedAnswer == option ? AppColors.accentCyan : AppColors.cardBorder)),
-                                width: 1.5,
+                    // 4. Đổi câu hỏi
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isChangeQuestionUsed ? Colors.white10 : Colors.orange.withOpacity(0.1),
+                        foregroundColor: _isChangeQuestionUsed ? Colors.white30 : Colors.orangeAccent,
+                        side: BorderSide(color: _isChangeQuestionUsed ? Colors.transparent : Colors.orangeAccent),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      onPressed: _isChangeQuestionUsed ? null : _useChangeQuestion,
+                      icon: const Icon(Icons.skip_next, size: 16),
+                      label: const Text("Skip Question", style: TextStyle(fontSize: 11)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.bgSecondary.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.cardBorder.withOpacity(0.5)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accentCyan.withOpacity(0.08),
+                            blurRadius: 16,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "QUESTION ${_currentIndex + 1}",
+                              style: const TextStyle(
+                                color: AppColors.accentCyan,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.5,
                               ),
                             ),
-                          ),
-                          onPressed: (_showingResult || isHidden || isWrongAttempt) ? null : () => _handleAnswer(option),
-                          child: Text(
-                            _isTranslated && _translatedAnswers.containsKey(option)
-                                ? _translatedAnswers[option]!
-                                : option,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                          ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _isTranslated && _translatedQuestion != null
+                                  ? _translatedQuestion!
+                                  : currentQuestion.questionText,
+                              style: const TextStyle(
+                                color: Colors.white, 
+                                fontSize: 18, 
+                                height: 1.4,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                );
-              }).toList(),
-            ],
+                ),
+                const SizedBox(height: 24),
+
+                // Answers List
+                ...currentQuestion.allAnswers.map((option) {
+                  // Kiểm tra xem đáp án có bị ẩn bởi trợ giúp 50/50 hay không
+                  final isHidden = _hiddenOptions.contains(option);
+                  // Kiểm tra xem đáp án đã từng bị chọn sai ở lượt đầu (khi dùng Double Answer)
+                  final isWrongAttempt = _wrongGuesses.contains(option);
+
+                  Color btnColor = AppColors.cardBg;
+                  Color txtColor = Colors.white;
+
+                  if (_showingResult) {
+                    if (option == currentQuestion.correctAnswer) {
+                      btnColor = AppColors.correctGreen.withOpacity(0.2);
+                      txtColor = AppColors.correctGreen;
+                    } else if (option == _selectedAnswer) {
+                      btnColor = AppColors.incorrectRed.withOpacity(0.2);
+                      txtColor = AppColors.incorrectRed;
+                    }
+                  } else if (isWrongAttempt) {
+                    btnColor = AppColors.incorrectRed.withOpacity(0.1);
+                    txtColor = AppColors.incorrectRed;
+                  } else if (option == _selectedAnswer) {
+                    btnColor = AppColors.accentCyan.withOpacity(0.15);
+                    txtColor = AppColors.accentCyan;
+                  }
+
+                  final optionIndex = currentQuestion.allAnswers.indexOf(option);
+                  final optionLetter = optionIndex >= 0 && optionIndex < 4 
+                      ? String.fromCharCode(65 + optionIndex) 
+                      : '?';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Visibility(
+                      visible: !isHidden,
+                      maintainState: true,
+                      maintainAnimation: true,
+                      maintainSize: true,
+                      child: Opacity(
+                        opacity: isHidden ? 0.0 : 1.0,
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: btnColor,
+                              foregroundColor: txtColor,
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: _showingResult && option == currentQuestion.correctAnswer
+                                      ? AppColors.correctGreen
+                                      : (isWrongAttempt
+                                          ? AppColors.incorrectRed
+                                          : (_selectedAnswer == option ? AppColors.accentCyan : AppColors.cardBorder)),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            onPressed: (_showingResult || isHidden || isWrongAttempt) ? null : () => _handleAnswer(option),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white10,
+                                    border: Border.all(color: txtColor.withOpacity(0.3)),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    optionLetter,
+                                    style: TextStyle(color: txtColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _isTranslated && _translatedAnswers.containsKey(option)
+                                        ? _translatedAnswers[option]!
+                                        : option,
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
           ),
         ),
       ),
