@@ -473,9 +473,6 @@ class _BattleScreenState extends State<BattleScreen> {
         setState(() {
           _isTranslating = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Lỗi kết nối dịch thuật. Vui lòng thử lại!")),
-        );
       }
     }
   }
@@ -617,19 +614,19 @@ class _BattleScreenState extends State<BattleScreen> {
     String contentText;
 
     if (scoreDiff > 0) {
-      titleText = "🏆 CHIẾN THẮNG!";
+      titleText = "🏆 VICTORY!";
       titleColor = AppColors.accentCyan;
-      contentText = "Bạn đã vượt qua đối thủ với tỉ số $myScore - $oppScore.\nBạn nhận được +400 Vàng!";
+      contentText = "You defeated your opponent by a score of $myScore - $oppScore.\nYou received +400 Gold!";
       provider.updateHighScore(myScore);
       provider.addGold(400);
     } else if (scoreDiff < 0) {
-      titleText = "💀 THẤT BẠI!";
+      titleText = "💀 DEFEATED!";
       titleColor = AppColors.accentPink;
-      contentText = "Bạn đã thua cuộc trước đối thủ với tỉ số $myScore - $oppScore.\nBạn bị mất 200 Vàng tiền cọc!";
+      contentText = "You lost to your opponent by a score of $myScore - $oppScore.\nYou lost the 200 Gold entry deposit!";
     } else {
-      titleText = "🤝 HÒA NHAU!";
+      titleText = "🤝 DRAW!";
       titleColor = AppColors.accentGold;
-      contentText = "Bạn đã hòa với đối thủ với tỉ số $myScore - $oppScore.\nMỗi bên mất 10% phí đặt cọc (20 Vàng).\nBạn được nhận lại 180 Vàng!";
+      contentText = "It's a draw with a score of $myScore - $oppScore.\nBoth sides pay a 10% fee (20 Gold).\nYou received 180 Gold back!";
       provider.addGold(180);
     }
 
@@ -659,7 +656,7 @@ class _BattleScreenState extends State<BattleScreen> {
               Navigator.of(ctx).pop();
               widget.onBackToLobby();
             },
-            child: const Text("Về Sảnh", style: TextStyle(color: AppColors.accentCyan)),
+            child: const Text("Back to Lobby", style: TextStyle(color: AppColors.accentCyan)),
           )
         ],
       ),
@@ -679,19 +676,19 @@ class _BattleScreenState extends State<BattleScreen> {
     String contentText;
 
     if (scoreDiff > 0) {
-      titleText = "🏆 CHIẾN THẮNG!";
+      titleText = "🏆 VICTORY!";
       titleColor = AppColors.accentCyan;
-      contentText = "Bạn đã vượt qua đối thủ với tỉ số $_playerScore - $_botScore.\nBạn nhận được +400 Vàng!";
+      contentText = "You defeated your opponent by a score of $_playerScore - $_botScore.\nYou received +400 Gold!";
       provider.updateHighScore(_playerScore);
       provider.addGold(400);
     } else if (scoreDiff < 0) {
-      titleText = "💀 THẤT BẠI!";
+      titleText = "💀 DEFEATED!";
       titleColor = AppColors.accentPink;
-      contentText = "Bạn đã thua cuộc trước đối thủ với tỉ số $_playerScore - $_botScore.\nBạn bị mất 200 Vàng tiền cọc!";
+      contentText = "You lost to your opponent by a score of $_playerScore - $_botScore.\nYou lost the 200 Gold entry deposit!";
     } else {
-      titleText = "🤝 HÒA NHAU!";
+      titleText = "🤝 DRAW!";
       titleColor = AppColors.accentGold;
-      contentText = "Bạn đã hòa với đối thủ với tỉ số $_playerScore - $_botScore.\nMỗi bên mất 10% phí đặt cọc (20 Vàng).\nBạn được nhận lại 180 Vàng!";
+      contentText = "It's a draw with a score of $_playerScore - $_botScore.\nBoth sides pay a 10% fee (20 Gold).\nYou received 180 Gold back!";
       provider.addGold(180);
     }
 
@@ -714,7 +711,7 @@ class _BattleScreenState extends State<BattleScreen> {
               Navigator.of(ctx).pop();
               widget.onBackToLobby();
             },
-            child: const Text("Về Sảnh", style: TextStyle(color: AppColors.accentCyan)),
+            child: const Text("Back to Lobby", style: TextStyle(color: AppColors.accentCyan)),
           )
         ],
       ),
@@ -760,7 +757,7 @@ class _BattleScreenState extends State<BattleScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Câu ${_currentQuestionIndex + 1} / 10", style: AppTypography.subtitleStyle.copyWith(color: Colors.white)),
+                  Text("Question ${_currentQuestionIndex + 1} / 10", style: AppTypography.subtitleStyle.copyWith(color: Colors.white)),
                   Text(
                     "$_secondsLeft s",
                     style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
@@ -786,7 +783,7 @@ class _BattleScreenState extends State<BattleScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("🏁 ĐƯỜNG ĐUA BATTLE", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                        const Text("🏁 BATTLE TRACK", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 12),
 
                         // Làn của người chơi
@@ -891,7 +888,7 @@ class _BattleScreenState extends State<BattleScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                         )
                       : const Icon(Icons.translate, size: 16),
-                  label: Text(_isTranslated ? "Gốc (English)" : "Dịch (Vietnamese)", style: const TextStyle(fontSize: 12)),
+                  label: Text(_isTranslated ? "Original (EN)" : "Translate (VN)", style: const TextStyle(fontSize: 12)),
                 ),
               ),
             ),
@@ -1007,12 +1004,12 @@ class _BattleScreenState extends State<BattleScreen> {
                 const Icon(Icons.radar, color: AppColors.accentCyan, size: 70),
                 const SizedBox(height: 16),
                 Text(
-                  "ĐANG TÌM ĐỐI THỦ...",
+                  "SEARCHING FOR OPPONENT...",
                   style: AppTypography.titleStyle.copyWith(fontSize: 24, color: AppColors.accentCyan, letterSpacing: 1.5),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "Tự động ghép với Bot sau $_matchmakingSec giây",
+                  "Auto-matching with Bot in $_matchmakingSec seconds",
                   style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 48),
@@ -1049,7 +1046,7 @@ class _BattleScreenState extends State<BattleScreen> {
                           playerState.nickname,
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                         ),
-                        const Text("BẠN", style: TextStyle(color: AppColors.accentCyan, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const Text("YOU", style: TextStyle(color: AppColors.accentCyan, fontSize: 10, fontWeight: FontWeight.bold)),
                       ],
                     ),
 
@@ -1091,10 +1088,10 @@ class _BattleScreenState extends State<BattleScreen> {
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          "Đang tìm...",
+                          "Searching...",
                           style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic, fontSize: 14),
                         ),
-                        const Text("ĐỐI THỦ", style: TextStyle(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const Text("OPPONENT", style: TextStyle(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ],
@@ -1114,7 +1111,7 @@ class _BattleScreenState extends State<BattleScreen> {
                   onPressed: _cancelMatchmaking,
                   icon: const Icon(Icons.close, size: 16),
                   label: const Text(
-                    "Hủy tìm trận",
+                    "Cancel Matchmaking",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
                   ),
                 ),

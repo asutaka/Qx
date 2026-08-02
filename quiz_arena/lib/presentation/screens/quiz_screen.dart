@@ -209,9 +209,6 @@ class _QuizScreenState extends State<QuizScreen> {
         setState(() {
           _isTranslating = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Lỗi kết nối dịch thuật. Vui lòng thử lại!")),
-        );
       }
     }
   }
@@ -252,13 +249,6 @@ class _QuizScreenState extends State<QuizScreen> {
         _isDoubleAnswerUsed = true;
         _isDoubleAnswerActive = true;
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("🎬 Quyền Trả lời 2 lần đã được kích hoạt!"),
-          backgroundColor: AppColors.correctGreen,
-        ),
-      );
     }
 
     // Tiếp tục thời gian trả lời
@@ -326,13 +316,6 @@ class _QuizScreenState extends State<QuizScreen> {
       });
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("🔄 Đã đổi sang câu hỏi mới!"),
-        backgroundColor: AppColors.correctGreen,
-      ),
-    );
-
     _startTimer(); // Bắt đầu lại bộ đếm 30 giây cho câu hỏi mới
   }
 
@@ -350,13 +333,6 @@ class _QuizScreenState extends State<QuizScreen> {
           _wrongGuesses.add(answer);
         }
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("❌ Sai rồi! Bạn còn 1 cơ hội cuối trả lời câu này."),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.orange,
-        ),
-      );
       _startTimer(resume: true); // Tiếp tục đếm ngược từ số giây còn lại
       return;
     }
@@ -405,9 +381,9 @@ class _QuizScreenState extends State<QuizScreen> {
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
-        title: const Text("💀 KẾT THÚC LƯỢT CHƠI", style: TextStyle(color: AppColors.accentPink, fontWeight: FontWeight.bold)),
+        title: const Text("💀 GAME OVER", style: TextStyle(color: AppColors.accentPink, fontWeight: FontWeight.bold)),
         content: Text(
-          "Bạn đã trả lời sai hoặc quá thời gian.\nĐiểm số đạt được: $_score câu đúng.\nPhần thưởng: +$rewardGold Vàng!",
+          "You answered incorrectly or ran out of time.\nFinal Score: $_score correct answers.\nReward: +$rewardGold Gold!",
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
@@ -416,7 +392,7 @@ class _QuizScreenState extends State<QuizScreen> {
               Navigator.of(ctx).pop();
               widget.onBackToLobby();
             },
-            child: const Text("Về Sảnh", style: TextStyle(color: AppColors.accentCyan)),
+            child: const Text("Back to Lobby", style: TextStyle(color: AppColors.accentCyan)),
           )
         ],
       ),
@@ -452,7 +428,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     icon: const Icon(Icons.close, color: Colors.white),
                     onPressed: widget.onBackToLobby,
                   ),
-                  Text("Đúng: $_score câu", style: AppTypography.subtitleStyle.copyWith(color: AppColors.accentGold)),
+                  Text("Correct: $_score", style: AppTypography.subtitleStyle.copyWith(color: AppColors.accentGold)),
                   Text(
                     "$_secondsLeft s",
                     style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
@@ -484,7 +460,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           )
                         : const Icon(Icons.translate, size: 16),
                     label: Text(
-                      _isTranslated ? "Gốc (English)" : "Dịch (Việt)",
+                      _isTranslated ? "Original (EN)" : "Translate (VN)",
                       style: const TextStyle(fontSize: 11),
                     ),
                   ),
@@ -512,7 +488,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                     onPressed: _isDoubleAnswerUsed ? null : _useDoubleAnswer,
                     icon: const Icon(Icons.repeat, size: 16),
-                    label: const Text("Trả lời x2 (QC)", style: TextStyle(fontSize: 11)),
+                    label: const Text("Double Ans (Ad)", style: TextStyle(fontSize: 11)),
                   ),
 
                   // 4. Đổi câu hỏi
@@ -525,7 +501,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                     onPressed: _isChangeQuestionUsed ? null : _useChangeQuestion,
                     icon: const Icon(Icons.skip_next, size: 16),
-                    label: const Text("Đổi câu hỏi", style: TextStyle(fontSize: 11)),
+                    label: const Text("Skip Question", style: TextStyle(fontSize: 11)),
                   ),
                 ],
               ),
@@ -667,12 +643,12 @@ class _AdDialogState extends State<_AdDialog> {
           const Icon(Icons.play_circle_fill, color: AppColors.accentPink, size: 60),
           const SizedBox(height: 16),
           const Text(
-            "🎬 QUẢNG CÁO TÀI TRỢ",
+            "🎬 SPONSORED AD",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 12),
           const Text(
-            "Đang xem quảng cáo để kích hoạt quyền Trả lời 2 lần...",
+            "Watching ad to activate Double Answer lifeline...",
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textSecondary),
           ),
@@ -680,7 +656,7 @@ class _AdDialogState extends State<_AdDialog> {
           const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentPink)),
           const SizedBox(height: 12),
           Text(
-            "Tự động đóng sau $_seconds giây",
+            "Closing in $_seconds seconds...",
             style: const TextStyle(color: AppColors.accentPink, fontWeight: FontWeight.bold),
           ),
         ],

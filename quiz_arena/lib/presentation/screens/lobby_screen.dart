@@ -157,13 +157,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     if (state.gold >= 200) {
                       gameProvider.deductGold(200);
                       widget.onStartBattle();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Bạn không đủ 200 Vàng tiền cọc để tham gia Battle Mode!"),
-                          backgroundColor: AppColors.incorrectRed,
-                        ),
-                      );
                     }
                   },
                   child: GlassContainer(
@@ -177,7 +170,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                             children: [
                               Text("BATTLE MODE", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentPink)),
                               const SizedBox(height: 4),
-                              Text("Đối kháng 1v1 chạy đua (Đặt cọc 200 vàng)", style: AppTypography.bodyStyle.copyWith(color: AppColors.textSecondary)),
+                              Text("1v1 Racing Battle (200 Gold Entry Fee)", style: AppTypography.bodyStyle.copyWith(color: AppColors.textSecondary)),
                             ],
                           ),
                         ),
@@ -202,7 +195,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                             children: [
                               Text("SINGLE MODE", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
                               const SizedBox(height: 4),
-                              Text("Ai là triệu phú 100 câu hỏi (Offline / Online)", style: AppTypography.bodyStyle.copyWith(color: AppColors.textSecondary)),
+                              Text("100 Progressive Questions (Offline / Online)", style: AppTypography.bodyStyle.copyWith(color: AppColors.textSecondary)),
                             ],
                           ),
                         ),
@@ -229,7 +222,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                             const Text("Daily Gift", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                             const SizedBox(height: 2),
                             Text(
-                              dailyReady ? "Mỗi ngày tặng 1000 vàng" : "Xem quảng cáo nhận thêm 500 vàng",
+                              dailyReady ? "Get 1,000 gold daily" : "Watch ad to get +500 gold",
                               style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                             ),
                           ],
@@ -247,9 +240,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
                             ),
                             onPressed: () {
                               gameProvider.claimDaily();
-                              ScaffoldMessenger.of(btnContext).showSnackBar(
-                                const SnackBar(content: Text("Bạn đã nhận quà đăng nhập hàng ngày: 1,000 Vàng!")),
-                              );
                             },
                             child: const Text("Claim 1,000"),
                           );
@@ -277,9 +267,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                     _isAdLoading = true;
                                   });
                                 }
-                                ScaffoldMessenger.of(btnContext).showSnackBar(
-                                  const SnackBar(content: Text("Đang tải quảng cáo từ CrazyGames...")),
-                                );
                                 final success = await CrazyGamesService.showAd("rewarded");
                                 if (mounted) {
                                   setState(() {
@@ -288,20 +275,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                 }
                                 if (success) {
                                   gameProvider.claimAd();
-                                  if (btnContext.mounted) {
-                                    ScaffoldMessenger.of(btnContext).showSnackBar(
-                                      const SnackBar(content: Text("Bạn đã nhận thêm 500 Vàng nhờ xem quảng cáo!")),
-                                    );
-                                  }
-                                } else {
-                                  if (btnContext.mounted) {
-                                    ScaffoldMessenger.of(btnContext).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Quảng cáo bị lỗi hoặc bạn đã đóng quảng cáo sớm!"),
-                                        backgroundColor: AppColors.incorrectRed,
-                                      ),
-                                    );
-                                  }
                                 }
                               },
                               child: _isAdLoading
@@ -313,7 +286,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                       ),
                                     )
-                                  : const Text("Xem QC +500 🎬"),
+                                  : const Text("Watch Ad +500 🎬"),
                             ),
                           );
                         } else {
@@ -336,7 +309,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                               ),
                             ),
                             onPressed: null, // Vô hiệu hóa khi đang cooldown
-                            child: Text("Xem QC +500 ($timeText)", style: const TextStyle(fontSize: 11)),
+                            child: Text("Watch Ad +500 ($timeText)", style: const TextStyle(fontSize: 11)),
                           );
                         }
                       }),
@@ -349,10 +322,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildNavTab(Icons.home, "Sảnh", true, () {}),
-                    _buildNavTab(Icons.shopping_bag, "Cửa Hàng", false, widget.onOpenShop),
-                    _buildNavTab(Icons.emoji_events, "Hạng", false, widget.onOpenRank),
-                    _buildNavTab(Icons.settings, "Cài Đặt", false, widget.onOpenSettings),
+                    _buildNavTab(Icons.home, "Lobby", true, () {}),
+                    _buildNavTab(Icons.shopping_bag, "Shop", false, widget.onOpenShop),
+                    _buildNavTab(Icons.emoji_events, "Rank", false, widget.onOpenRank),
+                    _buildNavTab(Icons.settings, "Settings", false, widget.onOpenSettings),
                   ],
                 ),
               ],
@@ -435,12 +408,12 @@ class _SimulatedAdDialogState extends State<_SimulatedAdDialog> {
               const Icon(Icons.movie, color: AppColors.accentPink, size: 80),
               const SizedBox(height: 24),
               const Text(
-                "QUẢNG CÁO ĐANG PHÁT",
+                "ADVERTISEMENT PLAYING",
                 style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5),
               ),
               const SizedBox(height: 8),
               Text(
-                "Còn lại $_secondsLeft giây",
+                "Remaining: $_secondsLeft seconds",
                 style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 32),

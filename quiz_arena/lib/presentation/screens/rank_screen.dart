@@ -52,11 +52,11 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
   }
 
   String _getRankTitle(int score) {
-    if (score >= 90) return 'Phù thủy 🧙‍♂️';
-    if (score >= 75) return 'Nhà thông thái 🧠';
-    if (score >= 55) return 'Chuyên gia 🎓';
-    if (score >= 35) return 'Có hiểu biết 📚';
-    if (score >= 15) return 'Tập sự 🛡️';
+    if (score >= 90) return 'Wizard 🧙‍♂️';
+    if (score >= 75) return 'Sage 🧠';
+    if (score >= 55) return 'Expert 🎓';
+    if (score >= 35) return 'Knowledgeable 📚';
+    if (score >= 15) return 'Apprentice 🛡️';
     return 'Newbie 🌱';
   }
 
@@ -86,7 +86,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                       onPressed: widget.onBackToLobby,
                     ),
                     const SizedBox(width: 8),
-                    Text("BẢNG XẾP HẠNG", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
+                    Text("LEADERBOARD", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
                   ],
                 ),
               ),
@@ -98,8 +98,8 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                 labelColor: AppColors.accentCyan,
                 unselectedLabelColor: AppColors.textSecondary,
                 tabs: const [
-                  Tab(text: "Kỷ lục chơi đơn"),
-                  Tab(text: "Tích lũy vàng"),
+                  Tab(text: "Single High Score"),
+                  Tab(text: "Gold Balance"),
                 ],
               ),
               const SizedBox(height: 12),
@@ -144,7 +144,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
               child: Padding(
                 padding: EdgeInsets.all(24.0),
                 child: Text(
-                  "Đang khởi tạo chỉ mục Firestore cho Bảng xếp hạng. Vui lòng thử lại sau ít phút!",
+                  "Initializing Firestore index for Leaderboard. Please try again in a few minutes!",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.accentGold),
                 ),
@@ -153,7 +153,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
           }
           return Center(
             child: Text(
-              "Lỗi khi tải bảng xếp hạng: ${snapshot.error}",
+              "Error loading leaderboard: ${snapshot.error}",
               style: const TextStyle(color: AppColors.incorrectRed),
             ),
           );
@@ -161,7 +161,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Text(
-              "Chưa có dữ liệu xếp hạng.",
+              "No leaderboard data available.",
               style: TextStyle(color: AppColors.textSecondary),
             ),
           );

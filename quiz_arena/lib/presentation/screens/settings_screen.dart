@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   final Map<String, String> _countries = {
-    'vn': 'Việt Nam 🇻🇳',
+    'vn': 'Vietnam 🇻🇳',
     'us': 'United States 🇺🇸',
     'jp': 'Japan 🇯🇵',
     'kr': 'South Korea 🇰🇷',
@@ -64,21 +64,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       TranslationService().downloadLanguageModelInBackground(newLanguage, (success) {
         if (success) {
           provider.downloadLanguagePackage(newLanguage);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Đã tải ngầm thành công gói dịch thuật $newLanguage offline!"),
-              backgroundColor: AppColors.correctGreen,
-            ),
-          );
         }
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đã lưu cài đặt và bắt đầu tải ngầm gói dịch thuật offline ở chế độ nền!")),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đã lưu các cài đặt thành công!")),
-      );
     }
     
     widget.onBackToLobby();
@@ -94,7 +81,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Icon(Icons.check_circle, color: AppColors.correctGreen, size: 16),
                   SizedBox(width: 4),
-                  Text("Sẵn sàng (Offline)", style: TextStyle(color: AppColors.correctGreen, fontSize: 12)),
+                  Text("Ready (Offline)", style: TextStyle(color: AppColors.correctGreen, fontSize: 12)),
                 ],
               )
             : ElevatedButton.icon(
@@ -106,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 onPressed: () => _downloadPackageSimulation(context, langCode),
                 icon: const Icon(Icons.download, size: 14),
-                label: const Text("Tải gói offline", style: TextStyle(fontSize: 11)),
+                label: const Text("Download package", style: TextStyle(fontSize: 11)),
               ),
       ],
     );
@@ -140,20 +127,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 
                 final provider = Provider.of<GameProvider>(context, listen: false);
                 provider.downloadLanguagePackage(langCode);
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Đã tải thành công gói dịch thuật $langCode offline!")),
-                );
               }
             });
 
             return AlertDialog(
               backgroundColor: AppColors.bgSecondary,
-              title: const Text("TẢI GÓI DỊCH THUẬT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              title: const Text("DOWNLOAD TRANSLATION PACKAGE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Đang tải gói dịch thuật offline cho ngôn ngữ $langCode..."),
+                  Text("Downloading offline translation package for $langCode..."),
                   const SizedBox(height: 16),
                   LinearProgressIndicator(
                     value: progress,
@@ -198,11 +181,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: widget.onBackToLobby,
                     ),
                     const SizedBox(width: 8),
-                    Text("CÀI ĐẶT DỰ ÁN", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
+                    Text("SETTINGS", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
                   ],
                 ),
                 const SizedBox(height: 24),
-
+ 
                 Expanded(
                   child: ListView(
                     children: [
@@ -211,13 +194,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("TÊN NGƯỜI CHƠI", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
+                            const Text("PLAYER NICKNAME", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
                             const SizedBox(height: 8),
                             TextField(
                               controller: _nicknameController,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
-                                hintText: "Nhập tên của bạn",
+                                hintText: "Enter your nickname",
                                 hintStyle: const TextStyle(color: Colors.white30),
                                 enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.cardBorder)),
                                 focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accentCyan)),
@@ -233,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("QUỐC GIA hiển thị", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
+                            const Text("DISPLAY COUNTRY", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
                             const SizedBox(height: 8),
                             Theme(
                               data: Theme.of(context).copyWith(
@@ -264,13 +247,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-
+ 
                       // 2.5. Ngôn ngữ dịch thuật (Target Translation Language)
                       GlassContainer(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("NGÔN NGỮ dịch thuật (Google ML Kit)", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
+                            const Text("TRANSLATION TARGET LANGUAGE (Google ML Kit)", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
                             const SizedBox(height: 8),
                             Theme(
                               data: Theme.of(context).copyWith(
@@ -285,11 +268,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 items: const [
                                   DropdownMenuItem<String>(
                                     value: 'en',
-                                    child: Text("Tiếng Anh (English) 🇬🇧"),
+                                    child: Text("English 🇬🇧"),
                                   ),
                                   DropdownMenuItem<String>(
                                     value: 'vi',
-                                    child: Text("Tiếng Việt (Vietnamese) 🇻🇳"),
+                                    child: Text("Vietnamese 🇻🇳"),
                                   ),
                                 ],
                                 onChanged: (val) {
@@ -302,11 +285,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            const Text("GÓI DỊCH THUẬT OFFLINE", style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 10)),
+                            const Text("OFFLINE TRANSLATION PACKAGES", style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 10)),
                             const SizedBox(height: 8),
-                            _buildPackageDownloadRow(context, "en", "Tiếng Anh 🇬🇧", true),
+                            _buildPackageDownloadRow(context, "en", "English 🇬🇧", true),
                             const SizedBox(height: 8),
-                            _buildPackageDownloadRow(context, "vi", "Tiếng Việt 🇻🇳", gameProvider.state.downloadedLanguages.contains("vi")),
+                            _buildPackageDownloadRow(context, "vi", "Vietnamese 🇻🇳", gameProvider.state.downloadedLanguages.contains("vi")),
                           ],
                         ),
                       ),
@@ -320,7 +303,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text("ÂM LƯỢNG NHẠC NỀN", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
+                                const Text("BACKGROUND MUSIC VOLUME", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
                                 Text("$_volume%", style: const TextStyle(color: Colors.white)),
                               ],
                             ),
@@ -353,7 +336,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () => _saveSettings(context),
-                  child: const Text("LƯU CÀI ĐẶT", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text("SAVE SETTINGS", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

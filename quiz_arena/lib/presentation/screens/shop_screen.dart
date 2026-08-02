@@ -63,7 +63,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                           onPressed: widget.onBackToLobby,
                         ),
                         const SizedBox(width: 8),
-                        Text("CỬA HÀNG", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
+                        Text("SHOP", style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan)),
                       ],
                     ),
                     Container(
@@ -92,10 +92,10 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 labelColor: AppColors.accentCyan,
                 unselectedLabelColor: AppColors.textSecondary,
                 tabs: const [
-                  Tab(text: "Nhân Vật"),
-                  Tab(text: "Mũ"),
-                  Tab(text: "Giày"),
-                  Tab(text: "Hiệu Ứng"),
+                  Tab(text: "Characters"),
+                  Tab(text: "Hats"),
+                  Tab(text: "Shoes"),
+                  Tab(text: "Effects"),
                 ],
               ),
               const SizedBox(height: 12),
@@ -186,7 +186,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                         elevation: 0,
                       ),
                       onPressed: null,
-                      child: const Text("Đang dùng", style: TextStyle(fontSize: 12)),
+                      child: const Text("Equipped", style: TextStyle(fontSize: 12)),
                     );
                   } else if (isOwned) {
                     return ElevatedButton(
@@ -198,7 +198,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                       onPressed: () {
                         gameProvider.equipItem(item.id, category);
                       },
-                      child: const Text("Trang bị", style: TextStyle(fontSize: 12)),
+                      child: const Text("Equip", style: TextStyle(fontSize: 12)),
                     );
                   } else {
                     return ElevatedButton(
@@ -207,18 +207,9 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                         foregroundColor: Colors.black,
                       ),
                       onPressed: () {
-                        final success = gameProvider.buyItem(item);
-                        if (success) {
-                          ScaffoldMessenger.of(btnContext).showSnackBar(
-                            SnackBar(content: Text("Chúc mừng! Bạn đã mua thành công ${item.name}!")),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(btnContext).showSnackBar(
-                            const SnackBar(content: Text("Bạn không đủ vàng để mua vật phẩm này!")),
-                          );
-                        }
+                        gameProvider.buyItem(item);
                       },
-                      child: Text("Mua ${item.price}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: Text("Buy ${item.price}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     );
                   }
                 }),
