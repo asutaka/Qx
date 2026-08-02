@@ -417,7 +417,7 @@ class _QuizScreenState extends State<QuizScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
+            colors: [AppColors.bgPrimary, AppColors.bgSecondary],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -468,106 +468,115 @@ class _QuizScreenState extends State<QuizScreen> {
                     // 1. Trợ giúp 50/50
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _is5050Used ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
-                        foregroundColor: _is5050Used ? AppColors.textPrimary.withOpacity(0.3) : AppColors.accentCyan,
+                        backgroundColor: AppColors.cardBg,
+                        foregroundColor: AppColors.accentCyan,
+                        disabledBackgroundColor: AppColors.cardBorder.withOpacity(0.4),
+                        disabledForegroundColor: AppColors.textPrimary.withOpacity(0.3),
                         side: BorderSide(color: _is5050Used ? Colors.transparent : AppColors.accentCyan),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                       onPressed: _is5050Used ? null : _use5050,
-                      icon: const Icon(Icons.star_half, size: 16),
-                      label: const Text("50/50", style: TextStyle(fontSize: 11)),
+                      icon: Icon(_is5050Used ? Icons.close : Icons.star_half, size: 16),
+                      label: Text(_is5050Used ? "50/50 ❌" : "50/50", style: const TextStyle(fontSize: 11)),
                     ),
 
                     // 2. Trả lời 2 lần (Xem quảng cáo)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isDoubleAnswerUsed ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
-                        foregroundColor: _isDoubleAnswerUsed ? AppColors.textPrimary.withOpacity(0.3) : Colors.purpleAccent,
+                        backgroundColor: AppColors.cardBg,
+                        foregroundColor: Colors.purpleAccent,
+                        disabledBackgroundColor: AppColors.cardBorder.withOpacity(0.4),
+                        disabledForegroundColor: AppColors.textPrimary.withOpacity(0.3),
                         side: BorderSide(color: _isDoubleAnswerUsed ? Colors.transparent : Colors.purpleAccent),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                       onPressed: _isDoubleAnswerUsed ? null : _useDoubleAnswer,
-                      icon: const Icon(Icons.repeat, size: 16),
-                      label: const Text("Double Ans (Ad)", style: TextStyle(fontSize: 11)),
+                      icon: Icon(_isDoubleAnswerUsed ? Icons.close : Icons.repeat, size: 16),
+                      label: Text(_isDoubleAnswerUsed ? "Double Ans ❌" : "Double Ans (Ad)", style: const TextStyle(fontSize: 11)),
                     ),
 
                     // 3. Đổi câu hỏi
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isChangeQuestionUsed ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
-                        foregroundColor: _isChangeQuestionUsed ? AppColors.textPrimary.withOpacity(0.3) : Colors.orangeAccent,
+                        backgroundColor: AppColors.cardBg,
+                        foregroundColor: Colors.orangeAccent,
+                        disabledBackgroundColor: AppColors.cardBorder.withOpacity(0.4),
+                        disabledForegroundColor: AppColors.textPrimary.withOpacity(0.3),
                         side: BorderSide(color: _isChangeQuestionUsed ? Colors.transparent : Colors.orangeAccent),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                       onPressed: _isChangeQuestionUsed ? null : _useChangeQuestion,
-                      icon: const Icon(Icons.skip_next, size: 16),
-                      label: const Text("Skip Question", style: TextStyle(fontSize: 11)),
+                      icon: Icon(_isChangeQuestionUsed ? Icons.close : Icons.skip_next, size: 16),
+                      label: Text(_isChangeQuestionUsed ? "Skip Question ❌" : "Skip Question", style: const TextStyle(fontSize: 11)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                // Translation toggle bar
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
-                      foregroundColor: _isTranslated ? AppColors.accentPink : AppColors.textPrimary,
-                      side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    onPressed: _isTranslating ? null : _toggleTranslation,
-                    icon: _isTranslating
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.textSecondary)),
-                          )
-                        : const Icon(Icons.translate, size: 16),
-                    label: Text(
-                      _isTranslated ? "Original (EN)" : "Translate (VN)",
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-
                 Expanded(
                   child: Center(
-                    child: GlassContainer(
-                      width: double.infinity,
-                      borderRadius: 24,
-                      padding: const EdgeInsets.all(24),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "QUESTION ${_currentIndex + 1}",
-                              style: const TextStyle(
-                                color: AppColors.accentCyan,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              _isTranslated && _translatedQuestion != null
-                                  ? _translatedQuestion!
-                                  : currentQuestion.questionText,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary, 
-                                fontSize: 18, 
-                                height: 1.4,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Translation toggle button (directly above the card)
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
+                            foregroundColor: _isTranslated ? AppColors.accentPink : AppColors.textPrimary,
+                            side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          onPressed: _isTranslating ? null : _toggleTranslation,
+                          icon: _isTranslating
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.textSecondary)),
+                                )
+                              : const Icon(Icons.translate, size: 16),
+                          label: Text(
+                            _isTranslated ? "Original (EN)" : "Translate (VN)",
+                            style: const TextStyle(fontSize: 12),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+
+                        GlassContainer(
+                          width: double.infinity,
+                          borderRadius: 24,
+                          padding: const EdgeInsets.all(24),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "QUESTION ${_currentIndex + 1}",
+                                  style: const TextStyle(
+                                    color: AppColors.accentCyan,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _isTranslated && _translatedQuestion != null
+                                      ? _translatedQuestion!
+                                      : currentQuestion.questionText,
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimary, 
+                                    fontSize: 18, 
+                                    height: 1.4,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

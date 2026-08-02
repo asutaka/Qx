@@ -41,7 +41,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
+            colors: [AppColors.bgPrimary, AppColors.bgSecondary],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -165,10 +165,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                             return const Icon(Icons.person, size: 50, color: AppColors.textSecondary);
                           },
                         )
-                      : Text(
-                          item.assetOrEmoji.isNotEmpty ? item.assetOrEmoji : "❌",
-                          style: const TextStyle(fontSize: 48),
-                        ),
+                      : _getItemGraphic(item),
                 ),
               ),
               
@@ -226,6 +223,80 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
           ),
         );
       },
+    );
+  }
+
+  Widget _getItemGraphic(ShopItem item) {
+    IconData iconData;
+    Color iconColor;
+    Color bgColor;
+
+    switch (item.id) {
+      // Hats
+      case "hat_none":
+        iconData = Icons.face_retouching_natural;
+        iconColor = AppColors.textSecondary;
+        bgColor = AppColors.textSecondary.withOpacity(0.1);
+        break;
+      case "hat_cowboy":
+        iconData = Icons.style_rounded;
+        iconColor = Colors.brown;
+        bgColor = Colors.brown.withOpacity(0.1);
+        break;
+      case "hat_crown":
+        iconData = Icons.emoji_events_rounded;
+        iconColor = AppColors.accentGold;
+        bgColor = AppColors.accentGold.withOpacity(0.1);
+        break;
+        
+      // Shoes
+      case "shoes_none":
+        iconData = Icons.do_not_step;
+        iconColor = AppColors.textSecondary;
+        bgColor = AppColors.textSecondary.withOpacity(0.1);
+        break;
+      case "shoes_running":
+        iconData = Icons.directions_run_rounded;
+        iconColor = AppColors.accentCyan;
+        bgColor = AppColors.accentCyan.withOpacity(0.1);
+        break;
+      case "shoes_gold":
+        iconData = Icons.bolt_rounded;
+        iconColor = AppColors.accentGold;
+        bgColor = AppColors.accentGold.withOpacity(0.1);
+        break;
+        
+      // Effects
+      case "effect_none":
+        iconData = Icons.blur_off_rounded;
+        iconColor = AppColors.textSecondary;
+        bgColor = AppColors.textSecondary.withOpacity(0.1);
+        break;
+      case "effect_fire":
+        iconData = Icons.whatshot_rounded;
+        iconColor = Colors.redAccent;
+        bgColor = Colors.redAccent.withOpacity(0.1);
+        break;
+      case "effect_rainbow":
+        iconData = Icons.looks_rounded;
+        iconColor = Colors.purpleAccent;
+        bgColor = Colors.purpleAccent.withOpacity(0.1);
+        break;
+        
+      default:
+        iconData = Icons.help_outline;
+        iconColor = AppColors.textSecondary;
+        bgColor = AppColors.textSecondary.withOpacity(0.1);
+    }
+
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(iconData, size: 36, color: iconColor),
     );
   }
 }

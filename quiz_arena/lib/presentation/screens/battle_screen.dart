@@ -753,7 +753,7 @@ class _BattleScreenState extends State<BattleScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
+            colors: [AppColors.bgPrimary, AppColors.bgSecondary],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -1061,7 +1061,7 @@ class _BattleScreenState extends State<BattleScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
+            colors: [AppColors.bgPrimary, AppColors.bgSecondary],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
