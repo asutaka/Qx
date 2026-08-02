@@ -597,14 +597,30 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 const SizedBox(height: 16),
 
                 // 3. Bottom Navigation Bar - Sticky at bottom
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavTab(Icons.home, "Lobby", true, () {}),
-                    _buildNavTab(Icons.shopping_bag, "Shop", false, widget.onOpenShop),
-                    _buildNavTab(Icons.emoji_events, "Rank", false, widget.onOpenRank),
-                    _buildNavTab(Icons.settings, "Settings", false, widget.onOpenSettings),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBg.withOpacity(0.95),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.cardBorder, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 16,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavTab(Icons.home, "Lobby", true, () {}),
+                      _buildNavTab(Icons.shopping_bag, "Shop", false, widget.onOpenShop),
+                      _buildNavTab(Icons.emoji_events, "Rank", false, widget.onOpenRank),
+                      _buildNavTab(Icons.settings, "Settings", false, widget.onOpenSettings),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -615,21 +631,37 @@ class _LobbyScreenState extends State<LobbyScreen> {
   }
 
   Widget _buildNavTab(IconData icon, String label, bool active, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Icon(icon, color: active ? AppColors.accentPink : AppColors.textSecondary, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: active ? AppColors.accentPink : AppColors.textSecondary,
-              fontSize: 10,
-              fontWeight: active ? FontWeight.bold : FontWeight.normal,
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          splashColor: AppColors.accentPink.withOpacity(0.15),
+          highlightColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  color: active ? AppColors.accentPink : AppColors.textSecondary,
+                  size: 26,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: active ? AppColors.accentPink : AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: active ? FontWeight.bold : FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -69,9 +70,54 @@ class _BattleScreenState extends State<BattleScreen> {
   String? _translatedQuestion;
   Map<String, String> _translatedAnswers = {};
 
+  static final List<String> _firstNames = [
+    'Speedy', 'Quiz', 'Runner', 'Alpha', 'Beta', 'Hyper', 'Swift', 'Apex', 'Brainy',
+    'Mega', 'Smart', 'Master', 'Super', 'Turbo', 'Flash', 'Pro', 'Champion', 'Elite',
+    'Chibi', 'Pixel', 'Sonic', 'Nexus', 'Cosmic', 'Shadow', 'Storm', 'Strike', 'Nova',
+    'Dino', 'Panda', 'Tiger', 'Ninja', 'Samurai', 'Hero', 'Wizard', 'Ghost', 'Rogue'
+  ];
+
+  static final List<String> _lastNames = [
+    'Racer', 'Master', 'Brain', 'King', 'Queen', 'Ninja', 'Star', 'Player', 'Hunter',
+    'Gamer', 'Knight', 'Seeker', 'Challenger', 'Solver', 'Mind', 'Guru', 'Sage',
+    'Spark', 'Dash', 'Blitz', 'Bolt', 'Wave', 'Storm', 'Shadow', 'Frost', 'Flame'
+  ];
+
+  static final List<String> _flags = [
+    '🇺🇸', '🇻🇳', '🇬🇧', '🇯🇵', '🇰🇷', '🇩🇪', '🇫🇷', '🇦🇺', '🇨🇦', '🇸🇬', '🇮🇳', '🇧🇷', '🇷🇺',
+    '🇪🇸', '🇮🇹', '🇳🇱', '🇸🇪', '🇨🇭', '🇳🇿', '🇲🇾', '🇹🇭', '🇵🇭', '🇮🇩'
+  ];
+
+  static final List<String> _characters = ['char_wukong', 'char_tu_ha'];
+  static final List<String> _hats = ['hat_cowboy', 'hat_straw', 'hat_cap', 'hat_crown', ''];
+  static final List<String> _shoes = ['shoes_running', 'shoes_gold', ''];
+  static final List<String> _effects = ['effect_fire', 'effect_stars', 'effect_lightning', 'effect_hearts', 'effect_bubbles', ''];
+
+  late final List<Map<String, String>> _randomOpponents;
+
   @override
   void initState() {
     super.initState();
+    
+    // Generate 99 random-looking simulated opponents
+    final rand = Random(42); // Stable seed
+    _randomOpponents = List.generate(99, (index) {
+      final firstName = _firstNames[rand.nextInt(_firstNames.length)];
+      final lastName = _lastNames[rand.nextInt(_lastNames.length)];
+      final flag = _flags[rand.nextInt(_flags.length)];
+      final hasNumber = rand.nextBool();
+      final numStr = hasNumber ? "${rand.nextInt(90) + 10}" : "";
+      final name = "$firstName$lastName$numStr $flag";
+
+      return {
+        'name': name,
+        'character': _characters[rand.nextInt(_characters.length)],
+        'hat': _hats[rand.nextInt(_hats.length)],
+        'shoes': _shoes[rand.nextInt(_shoes.length)],
+        'effect': _effects[rand.nextInt(_effects.length)],
+      };
+    });
+
     _initMatchmakingAndFirebase();
   }
 
@@ -180,12 +226,13 @@ class _BattleScreenState extends State<BattleScreen> {
       _isBotGame = true;
       _isHost = true;
       await _loadQuestions();
+      final randomOpponent = _randomOpponents[DateTime.now().millisecond % _randomOpponents.length];
       setState(() {
-        _opponentName = "BetaTester 🇺🇸";
-        _opponentCharId = "char_wukong";
-        _opponentHatId = "hat_cowboy";
-        _opponentShoesId = "shoes_running";
-        _opponentEffectId = "effect_fire";
+        _opponentName = randomOpponent['name']!;
+        _opponentCharId = randomOpponent['character']!;
+        _opponentHatId = randomOpponent['hat']!;
+        _opponentShoesId = randomOpponent['shoes']!;
+        _opponentEffectId = randomOpponent['effect']!;
         _isMatchmaking = false;
       });
       _startQuestionRound();
@@ -205,17 +252,18 @@ class _BattleScreenState extends State<BattleScreen> {
         }
       } else {
         _matchmakingTimer?.cancel();
-        // Hết 8s chưa có ai -> Chuyển sang đấu với Bot (Bot fallback)
+        // Hết 8s chưa có ai -> Chuyển sang đấu với đối thủ tự động
         if (_isHost && !_isBotGame && _roomId != null) {
           _isBotGame = true;
+          final randomOpponent = _randomOpponents[DateTime.now().millisecond % _randomOpponents.length];
           try {
             await FirebaseFirestore.instance.collection('rooms').doc(_roomId).update({
               'player2Id': 'bot_id',
-              'player2Name': 'BetaTester 🇺🇸',
-              'player2Character': 'char_wukong',
-              'player2Hat': 'hat_cowboy',
-              'player2Shoes': 'shoes_running',
-              'player2Effect': 'effect_fire',
+              'player2Name': randomOpponent['name']!,
+              'player2Character': randomOpponent['character']!,
+              'player2Hat': randomOpponent['hat']!,
+              'player2Shoes': randomOpponent['shoes']!,
+              'player2Effect': randomOpponent['effect']!,
               'status': 'playing',
               'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 15))),
             });
@@ -1395,6 +1443,7 @@ class _BattleScreenState extends State<BattleScreen> {
                   child: Column(
                     children: [
                       GlassContainer(
+                        width: double.infinity,
                         borderRadius: 20,
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -1547,7 +1596,7 @@ class _BattleScreenState extends State<BattleScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "Auto-matching with Bot in $_matchmakingSec seconds",
+                  "Connecting to live match in $_matchmakingSec seconds...",
                   style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 48),
