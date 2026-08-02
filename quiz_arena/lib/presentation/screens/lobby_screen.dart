@@ -574,7 +574,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                   return ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.accentPink.withOpacity(0.1),
-                                      foregroundColor: AppColors.textPrimary.withOpacity(0.3),
+                                      foregroundColor: AppColors.textPrimary.withOpacity(0.4),
+                                      disabledBackgroundColor: AppColors.accentPink.withOpacity(0.1),
+                                      disabledForegroundColor: AppColors.textPrimary.withOpacity(0.4),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         side: BorderSide(color: AppColors.accentPink.withOpacity(0.2)),

@@ -372,9 +372,9 @@ class _BattleScreenState extends State<BattleScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: AppColors.cardBg,
         title: Text(titleText, style: TextStyle(color: titleColor, fontWeight: FontWeight.bold)),
-        content: Text(contentText, style: const TextStyle(color: Colors.white)),
+        content: Text(contentText, style: const TextStyle(color: AppColors.textPrimary)),
         actions: [
           TextButton(
             onPressed: () {
@@ -553,11 +553,13 @@ class _BattleScreenState extends State<BattleScreen> {
         FirebaseFirestore.instance.collection('rooms').doc(_roomId).update({
           'player1Score': newScore,
           if (isFinished) 'player1Finished': true,
+          if (isFinished && _isBotGame) 'player2Finished': true,
         }).catchError((e) => print("Lỗi cập nhật điểm Host: $e"));
       } else {
         FirebaseFirestore.instance.collection('rooms').doc(_roomId).update({
           'player2Score': newScore,
           if (isFinished) 'player2Finished': true,
+          if (isFinished && _isBotGame) 'player1Finished': true,
         }).catchError((e) => print("Lỗi cập nhật điểm Guest: $e"));
       }
     } else {
@@ -925,14 +927,9 @@ class _BattleScreenState extends State<BattleScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
                     children: [
-                      Container(
-                        width: double.infinity,
+                      GlassContainer(
+                        borderRadius: 20,
                         padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardBg,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.cardBorder.withOpacity(0.5)),
-                        ),
                         child: Column(
                           children: [
                             Text(
@@ -988,6 +985,8 @@ class _BattleScreenState extends State<BattleScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: btnColor,
                                 foregroundColor: txtColor,
+                                disabledBackgroundColor: btnColor,
+                                disabledForegroundColor: txtColor,
                                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),

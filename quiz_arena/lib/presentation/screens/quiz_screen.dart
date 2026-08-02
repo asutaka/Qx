@@ -8,6 +8,7 @@ import '../../data/models/trivia_category.dart';
 import '../../data/models/trivia_difficulty.dart';
 import '../../data/services/trivia_api_service.dart';
 import '../../logic/game_provider.dart';
+import '../widgets/glass_container.dart';
 import '../../data/services/translation_service.dart';
 
 /// Màn hình Chơi đơn Single Mode (Ai Là Triệu Phú - 100 câu hỏi khó dần)
@@ -458,35 +459,13 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Cứu trợ panel (Wrap) để hiển thị đẹp mắt 4 quyền trợ giúp
+                // Cứu trợ panel (Wrap) để hiển thị đẹp mắt 3 quyền trợ giúp
                 Wrap(
                   spacing: 8.0,
                   runSpacing: 8.0,
                   alignment: WrapAlignment.center,
                   children: [
-                    // 1. Nút dịch câu hỏi
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
-                        foregroundColor: _isTranslated ? AppColors.accentPink : AppColors.textPrimary,
-                        side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      ),
-                      onPressed: _isTranslating ? null : _toggleTranslation,
-                      icon: _isTranslating
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.textSecondary)),
-                            )
-                          : const Icon(Icons.translate, size: 16),
-                      label: Text(
-                        _isTranslated ? "Original (EN)" : "Translate (VN)",
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    ),
-
-                    // 2. Trợ giúp 50/50
+                    // 1. Trợ giúp 50/50
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _is5050Used ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
@@ -499,7 +478,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       label: const Text("50/50", style: TextStyle(fontSize: 11)),
                     ),
 
-                    // 3. Trả lời 2 lần (Xem quảng cáo)
+                    // 2. Trả lời 2 lần (Xem quảng cáo)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isDoubleAnswerUsed ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
@@ -512,7 +491,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       label: const Text("Double Ans (Ad)", style: TextStyle(fontSize: 11)),
                     ),
 
-                    // 4. Đổi câu hỏi
+                    // 3. Đổi câu hỏi
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isChangeQuestionUsed ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
@@ -526,25 +505,40 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Translation toggle bar
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
+                      foregroundColor: _isTranslated ? AppColors.accentPink : AppColors.textPrimary,
+                      side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onPressed: _isTranslating ? null : _toggleTranslation,
+                    icon: _isTranslating
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.textSecondary)),
+                          )
+                        : const Icon(Icons.translate, size: 16),
+                    label: Text(
+                      _isTranslated ? "Original (EN)" : "Translate (VN)",
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
 
                 Expanded(
                   child: Center(
-                    child: Container(
+                    child: GlassContainer(
                       width: double.infinity,
+                      borderRadius: 24,
                       padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardBg,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: AppColors.cardBorder.withOpacity(0.5)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.accentCyan.withOpacity(0.04),
-                            blurRadius: 16,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
                       child: SingleChildScrollView(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -625,6 +619,8 @@ class _QuizScreenState extends State<QuizScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: btnColor,
                               foregroundColor: txtColor,
+                              disabledBackgroundColor: btnColor,
+                              disabledForegroundColor: txtColor,
                               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -717,7 +713,7 @@ class _AdDialogState extends State<_AdDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.bgSecondary,
+      backgroundColor: AppColors.cardBg,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -725,7 +721,7 @@ class _AdDialogState extends State<_AdDialog> {
           const SizedBox(height: 16),
           const Text(
             "🎬 SPONSORED AD",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 12),
           const Text(

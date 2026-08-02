@@ -13,7 +13,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFF4F46E5); // Rich purple for secondary titles/buttons
   
   static const Color cardBorder = Color(0xFFDDD6FE);    // Subtle soft lavender border
-  static const Color cardBg = Color(0xF4FFFFFF);        // Clean solid/semi-white card background
+  static const Color cardBg = Color(0xDDFFFFFF);        // Clean translucent white card background (soft glass effect)
   
   static const Color correctGreen = Color(0xFF10B981);  // Playful emerald green
   static const Color incorrectRed = Color(0xFFEF4444);  // Coral/pastel red
