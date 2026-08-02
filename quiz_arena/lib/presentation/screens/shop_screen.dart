@@ -41,7 +41,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF1E1035)],
+            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -59,7 +59,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
                           onPressed: widget.onBackToLobby,
                         ),
                         const SizedBox(width: 8),
@@ -69,15 +69,21 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black38,
+                        color: AppColors.cardBg,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.accentGold.withOpacity(0.5)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accentGold.withOpacity(0.1),
+                            blurRadius: 8,
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
                           const Icon(Icons.monetization_on, color: AppColors.accentGold, size: 18),
                           const SizedBox(width: 4),
-                          Text("${state.gold}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          Text("${state.gold}", style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -91,6 +97,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 indicatorColor: AppColors.accentCyan,
                 labelColor: AppColors.accentCyan,
                 unselectedLabelColor: AppColors.textSecondary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
                 tabs: const [
                   Tab(text: "Characters"),
                   Tab(text: "Hats"),
@@ -154,7 +162,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                           item.assetOrEmoji,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.person, size: 50, color: Colors.white70);
+                            return const Icon(Icons.person, size: 50, color: AppColors.textSecondary);
                           },
                         )
                       : Text(
@@ -167,7 +175,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
               // Tên vật phẩm
               Text(
                 item.name,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -181,8 +189,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                   if (isEquipped) {
                     return ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white10,
-                        foregroundColor: Colors.white30,
+                        backgroundColor: AppColors.cardBorder.withOpacity(0.4),
+                        foregroundColor: AppColors.textPrimary.withOpacity(0.3),
                         elevation: 0,
                       ),
                       onPressed: null,
@@ -204,7 +212,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                     return ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentGold,
-                        foregroundColor: Colors.black,
+                        foregroundColor: Colors.white,
                       ),
                       onPressed: () {
                         gameProvider.buyItem(item);

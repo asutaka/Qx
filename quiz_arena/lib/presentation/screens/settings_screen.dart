@@ -75,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(langName, style: const TextStyle(color: Colors.white, fontSize: 13)),
+        Text(langName, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
         isDownloaded
             ? const Row(
                 children: [
@@ -131,16 +131,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             });
 
             return AlertDialog(
-              backgroundColor: AppColors.bgSecondary,
-              title: const Text("DOWNLOAD TRANSLATION PACKAGE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              backgroundColor: AppColors.cardBg,
+              title: const Text("DOWNLOAD TRANSLATION PACKAGE", style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Downloading offline translation package for $langCode..."),
+                  Text("Downloading offline translation package for $langCode...", style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 16),
                   LinearProgressIndicator(
                     value: progress,
-                    backgroundColor: Colors.white10,
+                    backgroundColor: AppColors.cardBorder,
                     valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
                   ),
                   const SizedBox(height: 8),
@@ -162,7 +162,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF1E1035)],
+            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -177,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
                       onPressed: widget.onBackToLobby,
                     ),
                     const SizedBox(width: 8),
@@ -198,10 +198,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const SizedBox(height: 8),
                             TextField(
                               controller: _nicknameController,
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                               decoration: InputDecoration(
                                 hintText: "Enter your nickname",
-                                hintStyle: const TextStyle(color: Colors.white30),
+                                hintStyle: TextStyle(color: AppColors.textSecondary.withOpacity(0.5)),
                                 enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.cardBorder)),
                                 focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accentCyan)),
                               ),
@@ -220,18 +220,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const SizedBox(height: 8),
                             Theme(
                               data: Theme.of(context).copyWith(
-                                canvasColor: AppColors.bgSecondary,
+                                canvasColor: AppColors.cardBg,
                               ),
                               child: DropdownButton<String>(
                                 value: _selectedCountry,
-                                dropdownColor: AppColors.bgSecondary,
-                                style: const TextStyle(color: Colors.white),
+                                dropdownColor: AppColors.cardBg,
+                                style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                                 isExpanded: true,
                                 underline: Container(height: 1, color: AppColors.cardBorder),
                                 items: _countries.entries.map((entry) {
                                   return DropdownMenuItem<String>(
                                     value: entry.key,
-                                    child: Text(entry.value, style: const TextStyle(color: Colors.white)),
+                                    child: Text(entry.value, style: const TextStyle(color: AppColors.textPrimary)),
                                   );
                                 }).toList(),
                                 onChanged: (val) {
@@ -257,22 +257,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const SizedBox(height: 8),
                             Theme(
                               data: Theme.of(context).copyWith(
-                                canvasColor: AppColors.bgSecondary,
+                                canvasColor: AppColors.cardBg,
                               ),
                               child: DropdownButton<String>(
                                 value: _selectedLanguage,
-                                dropdownColor: AppColors.bgSecondary,
-                                style: const TextStyle(color: Colors.white),
+                                dropdownColor: AppColors.cardBg,
+                                style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                                 isExpanded: true,
                                 underline: Container(height: 1, color: AppColors.cardBorder),
                                 items: const [
                                   DropdownMenuItem<String>(
                                     value: 'en',
-                                    child: Text("English 🇬🇧"),
+                                    child: Text("English 🇬🇧", style: TextStyle(color: AppColors.textPrimary)),
                                   ),
                                   DropdownMenuItem<String>(
                                     value: 'vi',
-                                    child: Text("Vietnamese 🇻🇳"),
+                                    child: Text("Vietnamese 🇻🇳", style: TextStyle(color: AppColors.textPrimary)),
                                   ),
                                 ],
                                 onChanged: (val) {
@@ -304,7 +304,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text("BACKGROUND MUSIC VOLUME", style: TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.bold, fontSize: 12)),
-                                Text("$_volume%", style: const TextStyle(color: Colors.white)),
+                                Text("$_volume%", style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -316,7 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               inactiveColor: AppColors.cardBorder,
                               onChanged: (val) {
                                 setState(() {
-                                  _volume = val.round();
+                                    _volume = val.round();
                                 });
                               },
                             ),
@@ -331,7 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accentCyan,
-                    foregroundColor: Colors.black,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),

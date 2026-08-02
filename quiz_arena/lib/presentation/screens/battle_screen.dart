@@ -641,14 +641,14 @@ class _BattleScreenState extends State<BattleScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: AppColors.cardBg,
         title: Text(
           titleText,
           style: TextStyle(color: titleColor, fontWeight: FontWeight.bold),
         ),
         content: Text(
           contentText,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
         actions: [
           TextButton(
@@ -696,14 +696,14 @@ class _BattleScreenState extends State<BattleScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: AppColors.cardBg,
         title: Text(
           titleText,
           style: TextStyle(color: titleColor, fontWeight: FontWeight.bold),
         ),
         content: Text(
           contentText,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
         actions: [
           TextButton(
@@ -751,7 +751,7 @@ class _BattleScreenState extends State<BattleScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF16082C)],
+            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -765,7 +765,7 @@ class _BattleScreenState extends State<BattleScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Question ${_currentQuestionIndex + 1} / 10", style: AppTypography.subtitleStyle.copyWith(color: Colors.white)),
+                    Text("Question ${_currentQuestionIndex + 1} / 10", style: AppTypography.subtitleStyle.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
                     Text(
                       "$_secondsLeft s",
                       style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
@@ -808,7 +808,7 @@ class _BattleScreenState extends State<BattleScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("🏁 BATTLE TRACK", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                          Text("🏁 BATTLE TRACK", style: TextStyle(color: AppColors.textPrimary.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 12),
 
                           // Làn của người chơi
@@ -818,7 +818,7 @@ class _BattleScreenState extends State<BattleScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(playerState.nickname, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                  Text(playerState.nickname, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold)),
                                   Text("$_playerScore/10", style: const TextStyle(color: AppColors.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
                                 ],
                               ),
@@ -827,7 +827,7 @@ class _BattleScreenState extends State<BattleScreen> {
                                 height: 60,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.03),
+                                  color: Colors.black.withOpacity(0.04),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Stack(
@@ -857,7 +857,7 @@ class _BattleScreenState extends State<BattleScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(_opponentName, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                  Text(_opponentName, style: TextStyle(color: AppColors.textPrimary.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.bold)),
                                   Text("$_botScore/10", style: TextStyle(color: AppColors.accentPink, fontSize: 12, fontWeight: FontWeight.bold)),
                                 ],
                               ),
@@ -866,7 +866,7 @@ class _BattleScreenState extends State<BattleScreen> {
                                 height: 60,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.03),
+                                  color: Colors.black.withOpacity(0.04),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Stack(
@@ -901,7 +901,7 @@ class _BattleScreenState extends State<BattleScreen> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
-                      foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
+                      foregroundColor: _isTranslated ? AppColors.accentPink : AppColors.textPrimary,
                       side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
@@ -929,7 +929,7 @@ class _BattleScreenState extends State<BattleScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColors.bgSecondary.withOpacity(0.85),
+                          color: AppColors.cardBg,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: AppColors.cardBorder.withOpacity(0.5)),
                         ),
@@ -949,7 +949,7 @@ class _BattleScreenState extends State<BattleScreen> {
                               _isTranslated && _translatedQuestion != null
                                   ? _translatedQuestion!
                                   : currentQuestion.questionText,
-                              style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.4, fontWeight: FontWeight.bold),
+                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, height: 1.4, fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -960,7 +960,7 @@ class _BattleScreenState extends State<BattleScreen> {
                       // 4. Options
                       ...currentQuestion.allAnswers.map((option) {
                         Color btnColor = AppColors.cardBg;
-                        Color txtColor = Colors.white;
+                        Color txtColor = AppColors.textPrimary;
 
                         if (_showingAnswerResult) {
                           if (option == currentQuestion.correctAnswer) {
@@ -1007,7 +1007,7 @@ class _BattleScreenState extends State<BattleScreen> {
                                     height: 28,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.white10,
+                                      color: txtColor.withOpacity(0.1),
                                       border: Border.all(color: txtColor.withOpacity(0.3)),
                                     ),
                                     alignment: Alignment.center,
@@ -1062,7 +1062,7 @@ class _BattleScreenState extends State<BattleScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF1B093A)],
+            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -1116,7 +1116,7 @@ class _BattleScreenState extends State<BattleScreen> {
                         const SizedBox(height: 12),
                         Text(
                           playerState.nickname,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                         const Text("YOU", style: TextStyle(color: AppColors.accentCyan, fontSize: 10, fontWeight: FontWeight.bold)),
                       ],
@@ -1144,8 +1144,8 @@ class _BattleScreenState extends State<BattleScreen> {
                           height: 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.05),
-                            border: Border.all(color: Colors.white24, width: 1.5),
+                            color: AppColors.cardBg,
+                            border: Border.all(color: AppColors.cardBorder, width: 1.5),
                           ),
                           child: const Center(
                             child: SizedBox(
@@ -1163,7 +1163,7 @@ class _BattleScreenState extends State<BattleScreen> {
                           "Searching...",
                           style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic, fontSize: 14),
                         ),
-                        const Text("OPPONENT", style: TextStyle(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text("OPPONENT", style: TextStyle(color: AppColors.textPrimary.withOpacity(0.4), fontSize: 10, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ],
@@ -1174,9 +1174,9 @@ class _BattleScreenState extends State<BattleScreen> {
                 // Nút Hủy Tìm Trận
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white10,
-                    foregroundColor: Colors.white70,
-                    side: const BorderSide(color: Colors.white24),
+                    backgroundColor: AppColors.cardBg,
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: AppColors.cardBorder),
                     padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   ),

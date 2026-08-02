@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
-import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../../data/services/firebase_service.dart';
 
@@ -67,7 +65,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF1E1035)],
+            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -82,7 +80,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
                       onPressed: widget.onBackToLobby,
                     ),
                     const SizedBox(width: 8),
@@ -97,6 +95,8 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                 indicatorColor: AppColors.accentCyan,
                 labelColor: AppColors.accentCyan,
                 unselectedLabelColor: AppColors.textSecondary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
                 tabs: const [
                   Tab(text: "Single High Score"),
                   Tab(text: "Gold Balance"),
@@ -204,12 +204,12 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                   shape: BoxShape.circle,
                   color: index == 0 
                       ? AppColors.accentGold 
-                      : (index == 1 ? const Color(0xFFC0C0C0) : (index == 2 ? const Color(0xFFCD7F32) : Colors.white10)),
+                      : (index == 1 ? const Color(0xFFC0C0C0) : (index == 2 ? const Color(0xFFCD7F32) : AppColors.cardBorder)),
                 ),
                 child: Text(
                   "${index + 1}",
                   style: TextStyle(
-                    color: index < 3 ? Colors.black : Colors.white70,
+                    color: index < 3 ? Colors.black : AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -228,7 +228,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
                             nickname,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: isMe ? AppColors.accentCyan : Colors.white,
+                              color: isMe ? AppColors.accentCyan : AppColors.textPrimary,
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),

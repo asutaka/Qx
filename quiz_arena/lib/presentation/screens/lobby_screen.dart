@@ -99,7 +99,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF16082C)],
+            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -132,7 +132,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                 Text(
                                   state.nickname, 
                                   style: AppTypography.subtitleStyle.copyWith(
-                                    color: Colors.white, 
+                                    color: AppColors.textPrimary, 
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -153,12 +153,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black45,
+                        color: AppColors.cardBg,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.accentGold, width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.accentGold.withOpacity(0.2),
+                            color: AppColors.accentGold.withOpacity(0.1),
                             blurRadius: 8,
                           ),
                         ],
@@ -169,7 +169,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           const SizedBox(width: 4),
                           Text(
                             "${state.gold}", 
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -191,15 +191,15 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              colors: [AppColors.bgSecondary.withOpacity(0.8), Colors.black38],
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             border: Border.all(color: AppColors.cardBorder.withOpacity(0.6)),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black26,
+                                color: const Color(0xFF6366F1).withOpacity(0.2),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -479,11 +479,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           ),
                         ),
 
-                        // Daily Gift Banner
                         GlassContainer(
                           borderColor: dailyReady 
                               ? AppColors.accentGold.withOpacity(0.5) 
-                              : (adReady ? AppColors.accentPink.withOpacity(0.5) : Colors.white10),
+                              : (adReady ? AppColors.accentPink.withOpacity(0.5) : AppColors.cardBorder),
                           child: Row(
                             children: [
                               const Icon(Icons.card_giftcard, color: AppColors.accentGold, size: 36),
@@ -492,7 +491,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text("Daily Gift", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                    const Text("Daily Gift", style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
                                     const SizedBox(height: 2),
                                     Text(
                                       dailyReady ? "Get 1,000 gold daily" : "Watch ad to get +500 gold",
@@ -575,7 +574,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                   return ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.accentPink.withOpacity(0.1),
-                                      foregroundColor: Colors.white30,
+                                      foregroundColor: AppColors.textPrimary.withOpacity(0.3),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         side: BorderSide(color: AppColors.accentPink.withOpacity(0.2)),

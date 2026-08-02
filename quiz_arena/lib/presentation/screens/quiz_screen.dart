@@ -8,7 +8,6 @@ import '../../data/models/trivia_category.dart';
 import '../../data/models/trivia_difficulty.dart';
 import '../../data/services/trivia_api_service.dart';
 import '../../logic/game_provider.dart';
-import '../widgets/glass_container.dart';
 import '../../data/services/translation_service.dart';
 
 /// Màn hình Chơi đơn Single Mode (Ai Là Triệu Phú - 100 câu hỏi khó dần)
@@ -380,11 +379,11 @@ class _QuizScreenState extends State<QuizScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: AppColors.cardBg,
         title: const Text("💀 GAME OVER", style: TextStyle(color: AppColors.accentPink, fontWeight: FontWeight.bold)),
         content: Text(
           "You answered incorrectly or ran out of time.\nFinal Score: $_score correct answers.\nReward: +$rewardGold Gold!",
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
         actions: [
           TextButton(
@@ -417,7 +416,7 @@ class _QuizScreenState extends State<QuizScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.bgPrimary, Color(0xFF16082C)],
+            colors: [Color(0xFFEDE9FE), Color(0xFFE0F2FE)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -433,10 +432,10 @@ class _QuizScreenState extends State<QuizScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
+                      icon: const Icon(Icons.close, color: AppColors.textPrimary),
                       onPressed: widget.onBackToLobby,
                     ),
-                    Text("Correct: $_score", style: AppTypography.subtitleStyle.copyWith(color: AppColors.accentGold)),
+                    Text("Correct: $_score", style: AppTypography.subtitleStyle.copyWith(color: AppColors.accentGold, fontWeight: FontWeight.bold)),
                     Text(
                       "$_secondsLeft s",
                       style: AppTypography.titleStyle.copyWith(fontSize: 22, color: AppColors.accentCyan),
@@ -469,7 +468,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isTranslated ? AppColors.accentPink.withOpacity(0.2) : AppColors.cardBg,
-                        foregroundColor: _isTranslated ? AppColors.accentPink : Colors.white,
+                        foregroundColor: _isTranslated ? AppColors.accentPink : AppColors.textPrimary,
                         side: BorderSide(color: _isTranslated ? AppColors.accentPink : AppColors.cardBorder),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
@@ -478,7 +477,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           ? const SizedBox(
                               width: 14,
                               height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.textSecondary)),
                             )
                           : const Icon(Icons.translate, size: 16),
                       label: Text(
@@ -490,8 +489,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     // 2. Trợ giúp 50/50
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _is5050Used ? Colors.white10 : AppColors.accentCyan.withOpacity(0.1),
-                        foregroundColor: _is5050Used ? Colors.white30 : AppColors.accentCyan,
+                        backgroundColor: _is5050Used ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
+                        foregroundColor: _is5050Used ? AppColors.textPrimary.withOpacity(0.3) : AppColors.accentCyan,
                         side: BorderSide(color: _is5050Used ? Colors.transparent : AppColors.accentCyan),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
@@ -503,8 +502,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     // 3. Trả lời 2 lần (Xem quảng cáo)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isDoubleAnswerUsed ? Colors.white10 : Colors.purple.withOpacity(0.1),
-                        foregroundColor: _isDoubleAnswerUsed ? Colors.white30 : Colors.purpleAccent,
+                        backgroundColor: _isDoubleAnswerUsed ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
+                        foregroundColor: _isDoubleAnswerUsed ? AppColors.textPrimary.withOpacity(0.3) : Colors.purpleAccent,
                         side: BorderSide(color: _isDoubleAnswerUsed ? Colors.transparent : Colors.purpleAccent),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
@@ -516,8 +515,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     // 4. Đổi câu hỏi
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isChangeQuestionUsed ? Colors.white10 : Colors.orange.withOpacity(0.1),
-                        foregroundColor: _isChangeQuestionUsed ? Colors.white30 : Colors.orangeAccent,
+                        backgroundColor: _isChangeQuestionUsed ? AppColors.cardBorder.withOpacity(0.4) : AppColors.cardBg,
+                        foregroundColor: _isChangeQuestionUsed ? AppColors.textPrimary.withOpacity(0.3) : Colors.orangeAccent,
                         side: BorderSide(color: _isChangeQuestionUsed ? Colors.transparent : Colors.orangeAccent),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
@@ -535,12 +534,12 @@ class _QuizScreenState extends State<QuizScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: AppColors.bgSecondary.withOpacity(0.85),
+                        color: AppColors.cardBg,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: AppColors.cardBorder.withOpacity(0.5)),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.accentCyan.withOpacity(0.08),
+                            color: AppColors.accentCyan.withOpacity(0.04),
                             blurRadius: 16,
                             spreadRadius: 2,
                           ),
@@ -565,7 +564,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                   ? _translatedQuestion!
                                   : currentQuestion.questionText,
                               style: const TextStyle(
-                                color: Colors.white, 
+                                color: AppColors.textPrimary, 
                                 fontSize: 18, 
                                 height: 1.4,
                                 fontWeight: FontWeight.bold,
@@ -588,7 +587,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   final isWrongAttempt = _wrongGuesses.contains(option);
 
                   Color btnColor = AppColors.cardBg;
-                  Color txtColor = Colors.white;
+                  Color txtColor = AppColors.textPrimary;
 
                   if (_showingResult) {
                     if (option == currentQuestion.correctAnswer) {
@@ -647,7 +646,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                   height: 28,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white10,
+                                    color: txtColor.withOpacity(0.1),
                                     border: Border.all(color: txtColor.withOpacity(0.3)),
                                   ),
                                   alignment: Alignment.center,
