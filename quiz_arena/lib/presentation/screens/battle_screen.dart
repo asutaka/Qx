@@ -1316,95 +1316,96 @@ class _BattleScreenState extends State<BattleScreen> {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final trackWidth = constraints.maxWidth;
-                    const runnerWidth = 64.0;
+                    const runnerWidth = 56.0;
+                    const finishWidth = 36.0;
+                    final usableTrackWidth = trackWidth - runnerWidth - finishWidth;
                     
-                    // Tính vị trí left chạy của nhân vật dựa trên điểm số
-                    final playerLeft = (_playerScore / 10.0) * (trackWidth - runnerWidth);
-                    final botLeft = (_botScore / 10.0) * (trackWidth - runnerWidth);
+                    final playerLeft = (_playerScore / 10.0) * usableTrackWidth;
+                    final botLeft = (_botScore / 10.0) * usableTrackWidth;
+
+                    final scoreDiff = _playerScore - _botScore;
 
                     return GlassContainer(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("🏁 BATTLE TRACK", style: TextStyle(color: AppColors.textPrimary.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 12),
-
-                          // Làn của người chơi
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          // Header Track + Status Badge
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(playerState.nickname, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold)),
-                                  Text("$_playerScore/10", style: const TextStyle(color: AppColors.accentCyan, fontSize: 12, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                height: 60,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.04),
-                                  borderRadius: BorderRadius.circular(8),
+                              const Text(
+                                "🏁 CYBER BATTLE TRACK", 
+                                style: TextStyle(
+                                  color: AppColors.textPrimary, 
+                                  fontSize: 11, 
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.1,
                                 ),
-                                child: Stack(
-                                  children: [
-                                    AnimatedPositioned(
-                                      duration: const Duration(milliseconds: 500),
-                                      left: playerLeft,
-                                      top: 2,
-                                      child: RunnerWidget(
-                                        characterId: playerState.equippedCharacter,
-                                        hatId: playerState.equippedHat,
-                                        shoesId: playerState.equippedShoes,
-                                        effectId: playerState.equippedEffect,
-                                      ),
-                                    ),
-                                  ],
+                              ),
+                              // Status Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: scoreDiff > 0 
+                                      ? AppColors.accentCyan.withOpacity(0.2) 
+                                      : (scoreDiff < 0 ? AppColors.accentPink.withOpacity(0.2) : Colors.amber.withOpacity(0.2)),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: scoreDiff > 0 
+                                        ? AppColors.accentCyan 
+                                        : (scoreDiff < 0 ? AppColors.accentPink : Colors.amber),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  scoreDiff > 0 
+                                      ? "🔥 IN THE LEAD (+$scoreDiff)" 
+                                      : (scoreDiff < 0 ? "⚡ TRAILING ($scoreDiff)" : "⚔️ EVEN (0)"),
+                                  style: TextStyle(
+                                    color: scoreDiff > 0 
+                                        ? AppColors.accentCyan 
+                                        : (scoreDiff < 0 ? AppColors.accentPink : Colors.amber),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
 
-                          // Làn của Bot
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(_opponentName, style: TextStyle(color: AppColors.textPrimary.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.bold)),
-                                  Text("$_botScore/10", style: TextStyle(color: AppColors.accentPink, fontSize: 12, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                height: 60,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.04),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    AnimatedPositioned(
-                                      duration: const Duration(milliseconds: 500),
-                                      left: botLeft,
-                                      top: 2,
-                                      child: RunnerWidget(
-                                        characterId: _opponentCharId,
-                                        hatId: _opponentHatId,
-                                        shoesId: _opponentShoesId,
-                                        effectId: _opponentEffectId,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          // Làn của người chơi
+                          _buildLaneTrack(
+                            nickname: playerState.nickname,
+                            score: _playerScore,
+                            leftPos: playerLeft,
+                            usableWidth: usableTrackWidth,
+                            trackWidth: trackWidth,
+                            runnerWidth: runnerWidth,
+                            finishWidth: finishWidth,
+                            isPlayer: true,
+                            characterId: playerState.equippedCharacter,
+                            hatId: playerState.equippedHat,
+                            shoesId: playerState.equippedShoes,
+                            effectId: playerState.equippedEffect,
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Làn của Bot / Đối thủ
+                          _buildLaneTrack(
+                            nickname: _opponentName,
+                            score: _botScore,
+                            leftPos: botLeft,
+                            usableWidth: usableTrackWidth,
+                            trackWidth: trackWidth,
+                            runnerWidth: runnerWidth,
+                            finishWidth: finishWidth,
+                            isPlayer: false,
+                            characterId: _opponentCharId,
+                            hatId: _opponentHatId,
+                            shoesId: _opponentShoesId,
+                            effectId: _opponentEffectId,
                           ),
                         ],
                       ),
@@ -1716,4 +1717,192 @@ class _BattleScreenState extends State<BattleScreen> {
       ),
     );
   }
+
+  Widget _buildLaneTrack({
+    required String nickname,
+    required int score,
+    required double leftPos,
+    required double usableWidth,
+    required double trackWidth,
+    required double runnerWidth,
+    required double finishWidth,
+    required bool isPlayer,
+    required String characterId,
+    required String hatId,
+    required String shoesId,
+    required String effectId,
+  }) {
+    final themeColor = isPlayer ? AppColors.accentCyan : AppColors.accentPink;
+    final gradientColors = isPlayer
+        ? [AppColors.accentCyan.withOpacity(0.6), AppColors.accentCyan.withOpacity(0.05)]
+        : [AppColors.accentPink.withOpacity(0.6), AppColors.accentPink.withOpacity(0.05)];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(isPlayer ? Icons.person : Icons.smart_toy, color: themeColor, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  nickname,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              "$score / 10 PK",
+              style: TextStyle(color: themeColor, fontSize: 12, fontWeight: FontWeight.w900),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 64,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F1322),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: themeColor.withOpacity(0.3), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: themeColor.withOpacity(0.1),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // 1. Grid Checkpoints (10 nấc vạch kẻ)
+              Positioned.fill(
+                child: Row(
+                  children: List.generate(10, (index) {
+                    return Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            right: BorderSide(
+                              color: Colors.white.withOpacity(0.08),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              "${index + 1}",
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.25),
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+
+              // 2. Vạch Đích (FINISH GATE 🏁)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: finishWidth,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withOpacity(0.5),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("🏁", style: TextStyle(fontSize: 13)),
+                        Text("GOAL", style: TextStyle(fontSize: 7, color: Colors.black, fontWeight: FontWeight.w900)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 3. Dải Sáng Nitro Progress Trail chạy sau lưng Avatar
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOutCubic,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: (leftPos + runnerWidth / 2).clamp(0.0, trackWidth - finishWidth),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: gradientColors,
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+
+              // 4. Avatar Runner với Hiệu ứng Phát sáng Motion Glow
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOutCubic,
+                left: leftPos,
+                top: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: themeColor.withOpacity(0.6),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: RunnerWidget(
+                    characterId: characterId,
+                    hatId: hatId,
+                    shoesId: shoesId,
+                    effectId: effectId,
+                    size: 56,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
+
