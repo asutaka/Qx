@@ -1,0 +1,76 @@
+/// Danh sách toàn bộ các ngôn ngữ được Google ML Kit Translation hỗ trợ (59 ngôn ngữ), sắp xếp theo thứ tự bảng chữ cái A-Z
+class AppLanguage {
+  final String code;
+  final String name;
+  final String flag;
+
+  const AppLanguage({
+    required this.code,
+    required this.name,
+    required this.flag,
+  });
+
+  String get displayName => '$name $flag';
+}
+
+const List<AppLanguage> supportedLanguages = [
+  AppLanguage(code: 'af', name: 'Afrikaans', flag: '🇿🇦'),
+  AppLanguage(code: 'sq', name: 'Albanian', flag: '🇦🇱'),
+  AppLanguage(code: 'ar', name: 'Arabic', flag: '🇸🇦'),
+  AppLanguage(code: 'be', name: 'Belarusian', flag: '🇧🇾'),
+  AppLanguage(code: 'bn', name: 'Bengali', flag: '🇧🇩'),
+  AppLanguage(code: 'bg', name: 'Bulgarian', flag: '🇧🇬'),
+  AppLanguage(code: 'ca', name: 'Catalan', flag: '🇪🇸'),
+  AppLanguage(code: 'zh', name: 'Chinese', flag: '🇨🇳'),
+  AppLanguage(code: 'hr', name: 'Croatian', flag: '🇭🇷'),
+  AppLanguage(code: 'cs', name: 'Czech', flag: '🇨🇿'),
+  AppLanguage(code: 'da', name: 'Danish', flag: '🇩🇰'),
+  AppLanguage(code: 'nl', name: 'Dutch', flag: '🇳🇱'),
+  AppLanguage(code: 'en', name: 'English', flag: '🇬🇧'),
+  AppLanguage(code: 'eo', name: 'Esperanto', flag: '🌐'),
+  AppLanguage(code: 'et', name: 'Estonian', flag: '🇪🇪'),
+  AppLanguage(code: 'fi', name: 'Finnish', flag: '🇫🇮'),
+  AppLanguage(code: 'fr', name: 'French', flag: '🇫🇷'),
+  AppLanguage(code: 'gl', name: 'Galician', flag: '🇪🇸'),
+  AppLanguage(code: 'ka', name: 'Georgian', flag: '🇬🇪'),
+  AppLanguage(code: 'de', name: 'German', flag: '🇩🇪'),
+  AppLanguage(code: 'el', name: 'Greek', flag: '🇬🇷'),
+  AppLanguage(code: 'gu', name: 'Gujarati', flag: '🇮🇳'),
+  AppLanguage(code: 'ht', name: 'Haitian Creole', flag: '🇭🇹'),
+  AppLanguage(code: 'he', name: 'Hebrew', flag: '🇮🇱'),
+  AppLanguage(code: 'hi', name: 'Hindi', flag: '🇮🇳'),
+  AppLanguage(code: 'hu', name: 'Hungarian', flag: '🇭🇺'),
+  AppLanguage(code: 'is', name: 'Icelandic', flag: '🇮🇸'),
+  AppLanguage(code: 'id', name: 'Indonesian', flag: '🇮🇩'),
+  AppLanguage(code: 'ga', name: 'Irish', flag: '🇮🇪'),
+  AppLanguage(code: 'it', name: 'Italian', flag: '🇮🇹'),
+  AppLanguage(code: 'ja', name: 'Japanese', flag: '🇯🇵'),
+  AppLanguage(code: 'kn', name: 'Kannada', flag: '🇮🇳'),
+  AppLanguage(code: 'ko', name: 'Korean', flag: '🇰🇷'),
+  AppLanguage(code: 'lv', name: 'Latvian', flag: '🇱🇻'),
+  AppLanguage(code: 'lt', name: 'Lithuanian', flag: '🇱🇹'),
+  AppLanguage(code: 'mk', name: 'Macedonian', flag: '🇲🇰'),
+  AppLanguage(code: 'ms', name: 'Malay', flag: '🇲🇾'),
+  AppLanguage(code: 'mt', name: 'Maltese', flag: '🇲🇹'),
+  AppLanguage(code: 'mr', name: 'Marathi', flag: '🇮🇳'),
+  AppLanguage(code: 'no', name: 'Norwegian', flag: '🇳🇴'),
+  AppLanguage(code: 'fa', name: 'Persian', flag: '🇮🇷'),
+  AppLanguage(code: 'pl', name: 'Polish', flag: '🇵🇱'),
+  AppLanguage(code: 'pt', name: 'Portuguese', flag: '🇵🇹'),
+  AppLanguage(code: 'ro', name: 'Romanian', flag: '🇷🇴'),
+  AppLanguage(code: 'ru', name: 'Russian', flag: '🇷🇺'),
+  AppLanguage(code: 'sk', name: 'Slovak', flag: '🇸🇰'),
+  AppLanguage(code: 'sl', name: 'Slovenian', flag: '🇸🇮'),
+  AppLanguage(code: 'es', name: 'Spanish', flag: '🇪🇸'),
+  AppLanguage(code: 'sw', name: 'Swahili', flag: '🇰🇪'),
+  AppLanguage(code: 'sv', name: 'Swedish', flag: '🇸🇪'),
+  AppLanguage(code: 'tl', name: 'Tagalog', flag: '🇵🇭'),
+  AppLanguage(code: 'ta', name: 'Tamil', flag: '🇮🇳'),
+  AppLanguage(code: 'te', name: 'Telugu', flag: '🇮🇳'),
+  AppLanguage(code: 'th', name: 'Thai', flag: '🇹🇭'),
+  AppLanguage(code: 'tr', name: 'Turkish', flag: '🇹🇷'),
+  AppLanguage(code: 'uk', name: 'Ukrainian', flag: '🇺🇦'),
+  AppLanguage(code: 'ur', name: 'Urdu', flag: '🇵🇰'),
+  AppLanguage(code: 'vi', name: 'Vietnamese', flag: '🇻🇳'),
+  AppLanguage(code: 'cy', name: 'Welsh', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿'),
+];

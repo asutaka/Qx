@@ -15,7 +15,7 @@ class TranslationService {
 
   /// Dịch văn bản từ ngôn ngữ nguồn sang ngôn ngữ đích
   Future<String> translate(String text, {String from = 'en', String to = 'vi'}) async {
-    if (text.trim().isEmpty) return text;
+    if (text.trim().isEmpty || from == to) return text;
     
     // Xử lý các kí tự thực thể HTML nếu có (ví dụ: &quot;, &#039;)
     String cleanText = _decodeHtmlEntities(text);
@@ -113,26 +113,15 @@ class TranslationService {
     });
   }
 
-  /// Ánh xạ từ mã chuỗi (String) sang TranslateLanguage của ML Kit
+  /// Ánh xạ từ mã chuỗi (String) sang TranslateLanguage của ML Kit (hỗ trợ toàn bộ 59 ngôn ngữ)
   TranslateLanguage? _mapStringToLanguage(String code) {
-    switch (code.toLowerCase()) {
-      case 'en':
-        return TranslateLanguage.english;
-      case 'vi':
-        return TranslateLanguage.vietnamese;
-      case 'ja':
-      case 'jp':
-        return TranslateLanguage.japanese;
-      case 'ko':
-      case 'kr':
-        return TranslateLanguage.korean;
-      case 'fr':
-        return TranslateLanguage.french;
-      case 'de':
-        return TranslateLanguage.german;
-      default:
-        return null;
+    final cleanCode = code.toLowerCase();
+    for (final lang in TranslateLanguage.values) {
+      if (lang.bcpCode == cleanCode || lang.name == cleanCode) {
+        return lang;
+      }
     }
+    return null;
   }
 
   /// Hàm giải mã nhanh các thực thể HTML phổ biến trả về từ Open Trivia Database

@@ -656,14 +656,16 @@ class _BattleScreenState extends State<BattleScreen> {
       _isTranslating = true;
     });
 
+    final gameProvider = Provider.of<GameProvider>(context, listen: false);
+    final targetLang = gameProvider.state.targetLanguage;
     final currentQuestion = _questions[_currentQuestionIndex];
     final translator = TranslationService();
 
     try {
-      final transQ = await translator.translate(currentQuestion.questionText);
+      final transQ = await translator.translate(currentQuestion.questionText, to: targetLang);
       final Map<String, String> transAns = {};
       for (final answer in currentQuestion.allAnswers) {
-        final transA = await translator.translate(answer);
+        final transA = await translator.translate(answer, to: targetLang);
         transAns[answer] = transA;
       }
 
@@ -1430,7 +1432,12 @@ class _BattleScreenState extends State<BattleScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                           )
                         : const Icon(Icons.translate, size: 16),
-                    label: Text(_isTranslated ? "Original (EN)" : "Translate (VN)", style: const TextStyle(fontSize: 12)),
+                    label: Builder(
+                      builder: (context) {
+                        final targetLang = Provider.of<GameProvider>(context).state.targetLanguage.toUpperCase();
+                        return Text(_isTranslated ? "Original (EN)" : "Translate ($targetLang)", style: const TextStyle(fontSize: 12));
+                      },
+                    ),
                   ),
                 ),
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
+import '../../core/constants/countries.dart';
 import '../widgets/glass_container.dart';
 import '../../data/services/firebase_service.dart';
 
@@ -42,11 +43,7 @@ class _RankScreenState extends State<RankScreen> with SingleTickerProviderStateM
   }
 
   String _getCountryFlag(String code) {
-    const flags = {
-      'vn': '🇻🇳', 'us': '🇺🇸', 'jp': '🇯🇵', 'kr': '🇰🇷',
-      'gb': '🇬🇧', 'fr': '🇫🇷', 'de': '🇩🇪', 'sg': '🇸🇬'
-    };
-    return flags[code.toLowerCase()] ?? '🏳️';
+    return getCountryFlag(code);
   }
 
   String _getRankTitle(int score) {

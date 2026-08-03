@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
+import '../../core/constants/countries.dart';
+import '../../core/constants/supported_languages.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../../data/services/translation_service.dart';
@@ -39,16 +41,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
-  final Map<String, String> _countries = {
-    'vn': 'Vietnam 🇻🇳',
-    'us': 'United States 🇺🇸',
-    'jp': 'Japan 🇯🇵',
-    'kr': 'South Korea 🇰🇷',
-    'gb': 'United Kingdom 🇬🇧',
-    'fr': 'France 🇫🇷',
-    'de': 'Germany 🇩🇪',
-    'sg': 'Singapore 🇸🇬',
-  };
 
   void _saveSettings(BuildContext context) {
     final provider = Provider.of<GameProvider>(context, listen: false);
@@ -228,10 +220,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                                 isExpanded: true,
                                 underline: Container(height: 1, color: AppColors.cardBorder),
-                                items: _countries.entries.map((entry) {
+                                items: allCountries.map((country) {
                                   return DropdownMenuItem<String>(
-                                    value: entry.key,
-                                    child: Text(entry.value, style: const TextStyle(color: AppColors.textPrimary)),
+                                    value: country.code,
+                                    child: Text(country.displayName, style: const TextStyle(color: AppColors.textPrimary)),
                                   );
                                 }).toList(),
                                 onChanged: (val) {
@@ -265,16 +257,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                                 isExpanded: true,
                                 underline: Container(height: 1, color: AppColors.cardBorder),
-                                items: const [
-                                  DropdownMenuItem<String>(
-                                    value: 'en',
-                                    child: Text("English 🇬🇧", style: TextStyle(color: AppColors.textPrimary)),
-                                  ),
-                                  DropdownMenuItem<String>(
-                                    value: 'vi',
-                                    child: Text("Vietnamese 🇻🇳", style: TextStyle(color: AppColors.textPrimary)),
-                                  ),
-                                ],
+                                items: supportedLanguages.map((lang) {
+                                  return DropdownMenuItem<String>(
+                                    value: lang.code,
+                                    child: Text(lang.displayName, style: const TextStyle(color: AppColors.textPrimary)),
+                                  );
+                                }).toList(),
                                 onChanged: (val) {
                                   if (val != null) {
                                     setState(() {
@@ -288,8 +276,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const Text("OFFLINE TRANSLATION PACKAGES", style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 10)),
                             const SizedBox(height: 8),
                             _buildPackageDownloadRow(context, "en", "English 🇬🇧", true),
-                            const SizedBox(height: 8),
-                            _buildPackageDownloadRow(context, "vi", "Vietnamese 🇻🇳", gameProvider.state.downloadedLanguages.contains("vi")),
+                            if (_selectedLanguage != 'en') ...[
+                              const SizedBox(height: 8),
+                              _buildPackageDownloadRow(
+                                context, 
+                                _selectedLanguage, 
+                                supportedLanguages.firstWhere((l) => l.code == _selectedLanguage, orElse: () => AppLanguage(code: _selectedLanguage, name: _selectedLanguage, flag: '🌐')).displayName, 
+                                gameProvider.state.downloadedLanguages.contains(_selectedLanguage),
+                              ),
+                            ],
                           ],
                         ),
                       ),

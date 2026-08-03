@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
+import '../../core/constants/countries.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../widgets/runner_widget.dart';
@@ -52,11 +53,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   /// Trả về emoji cờ quốc kỳ từ mã quốc gia
   String _getCountryFlag(String code) {
-    const flags = {
-      'vn': '🇻🇳', 'us': '🇺🇸', 'jp': '🇯🇵', 'kr': '🇰🇷',
-      'gb': '🇬🇧', 'fr': '🇫🇷', 'de': '🇩🇪', 'sg': '🇸🇬'
-    };
-    return flags[code.toLowerCase()] ?? '🏳️';
+    return getCountryFlag(code);
   }
 
   String _getRankTitle(int score) {
