@@ -1,13 +1,13 @@
-import 'dart:js_util' as js_util;
-import 'dart:html' as html;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 /// Triển khai thực tế trên môi trường Web
 Future<String?> getCrazyGamesUserIdImpl() async {
   try {
-    if (js_util.hasProperty(html.window, 'getCrazyUserId')) {
-      final promise = js_util.callMethod(html.window, 'getCrazyUserId', []);
-      final result = await js_util.promiseToFuture(promise);
-      return result as String?;
+    if (globalContext.has('getCrazyUserId')) {
+      final promise = globalContext.callMethod<JSPromise<JSString?>>('getCrazyUserId'.toJS);
+      final result = await promise.toDart;
+      return result?.toDart;
     }
   } catch (e) {
     print("Error calling getCrazyUserId in JS: $e");
@@ -17,13 +17,15 @@ Future<String?> getCrazyGamesUserIdImpl() async {
 
 Future<bool> showCrazyAdImpl(String adType) async {
   try {
-    if (js_util.hasProperty(html.window, 'showCrazyAd')) {
-      final promise = js_util.callMethod(html.window, 'showCrazyAd', [adType]);
-      final result = await js_util.promiseToFuture(promise);
-      return result as bool? ?? false;
+    if (globalContext.has('showCrazyAd')) {
+      final promise = globalContext.callMethod<JSPromise<JSBoolean>>('showCrazyAd'.toJS, adType.toJS);
+      final result = await promise.toDart;
+      return result.toDart;
     }
   } catch (e) {
     print("Error calling showCrazyAd in JS: $e");
   }
   return true; // Trả về true nếu gặp lỗi môi trường để tránh làm kẹt game của người chơi
 }
+
+
