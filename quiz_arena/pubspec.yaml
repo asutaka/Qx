@@ -41,3 +41,4 @@ flutter:
   assets:
     - assets/characters/
     - assets/audio/
+    - assets/questions/

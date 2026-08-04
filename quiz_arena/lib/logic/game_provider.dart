@@ -1,17 +1,25 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/models/game_state.dart';
 import '../core/constants/shop_items.dart';
 import '../data/services/firebase_service.dart';
 
 /// Provider quản lý toàn bộ trạng thái của game (State Management).
-/// Tích hợp cơ chế tự động đồng bộ hóa lên Cloud Firestore.
+/// Tích hợp cơ chế tự động đồng bộ hóa lên Cloud Firestore với debounce hoãn ghi.
 class GameProvider extends ChangeNotifier {
   LocalGameState _state = LocalGameState.defaultState();
+  Timer? _saveDebounceTimer;
   
   LocalGameState get state => _state;
 
   GameProvider() {
     _initAndLoadData();
+  }
+
+  @override
+  void dispose() {
+    _saveDebounceTimer?.cancel();
+    super.dispose();
   }
 
   /// Tải thông tin tài khoản đã lưu trên Firestore lúc khởi chạy ứng dụng
@@ -21,14 +29,23 @@ class GameProvider extends ChangeNotifier {
       _state = cloudState;
       notifyListeners();
     } else {
-      // Nếu chưa có tài liệu trên Cloud Firestore, khởi tạo tài liệu mới
-      _saveToCloud();
+      // Nếu chưa có tài liệu trên Cloud Firestore, khởi tạo tài liệu mới ngay lập tức
+      _saveToCloud(immediate: true);
     }
   }
 
-  /// Hàm phụ gửi dữ liệu đồng bộ lên Firestore
-  void _saveToCloud() {
-    FirebaseService().saveGameState(_state);
+  /// Hàm gửi dữ liệu đồng bộ lên Firestore với cơ chế Debounce 1.5 giây
+  void _saveToCloud({bool immediate = false}) {
+    if (immediate) {
+      _saveDebounceTimer?.cancel();
+      FirebaseService().saveGameState(_state);
+      return;
+    }
+
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = Timer(const Duration(milliseconds: 1500), () {
+      FirebaseService().saveGameState(_state);
+    });
   }
 
   /// Cập nhật tên hiển thị người chơi.
@@ -81,6 +98,8 @@ class GameProvider extends ChangeNotifier {
       _state = _state.copyWith(equippedShoes: itemId);
     } else if (category == "effect") {
       _state = _state.copyWith(equippedEffect: itemId);
+    } else if (category == "track") {
+      _state = _state.copyWith(equippedTrack: itemId);
     }
     notifyListeners();
     _saveToCloud();

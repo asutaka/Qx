@@ -15,6 +15,7 @@ import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../widgets/runner_widget.dart';
 import '../../data/services/translation_service.dart';
+import '../../data/services/audio_service.dart';
 
 /// Màn hình Đua đối kháng Battle Mode 1v1 (Realtime PvP với Bot fallback)
 class BattleScreen extends StatefulWidget {
@@ -49,6 +50,7 @@ class _BattleScreenState extends State<BattleScreen> {
   String _opponentHatId = "hat_cowboy";
   String _opponentShoesId = "shoes_running";
   String _opponentEffectId = "effect_fire";
+  String _opponentTrackId = "track_cyber";
 
   // Dữ liệu trận đấu
   List<Question> _questions = [];
@@ -88,10 +90,11 @@ class _BattleScreenState extends State<BattleScreen> {
     '🇪🇸', '🇮🇹', '🇳🇱', '🇸🇪', '🇨🇭', '🇳🇿', '🇲🇾', '🇹🇭', '🇵🇭', '🇮🇩'
   ];
 
-  static final List<String> _characters = ['char_wukong', 'char_tu_ha'];
-  static final List<String> _hats = ['hat_cowboy', 'hat_straw', 'hat_cap', 'hat_crown', ''];
-  static final List<String> _shoes = ['shoes_running', 'shoes_gold', ''];
-  static final List<String> _effects = ['effect_fire', 'effect_stars', 'effect_lightning', 'effect_hearts', 'effect_bubbles', ''];
+  static final List<String> _characters = ['char_wukong', 'char_tu_ha', 'char_xuat_kich', 'char_lan_m', 'char_hao_nhoang_m'];
+  static final List<String> _hats = ['hat_cowboy', 'hat_straw', 'hat_cap', 'hat_crown', 'hat_wizard', 'hat_astro', 'hat_graduate'];
+  static final List<String> _shoes = ['shoes_running', 'shoes_gold', 'shoes_rocket', 'shoes_roller', 'shoes_skate'];
+  static final List<String> _effects = ['effect_fire', 'effect_stars', 'effect_lightning', 'effect_hearts', 'effect_bubbles', 'effect_rainbow'];
+  static final List<String> _tracks = ['track_cyber', 'track_sakura', 'track_lightning', 'track_hellfire', 'track_galaxy', 'track_gold'];
 
   late final List<Map<String, String>> _randomOpponents;
 
@@ -115,6 +118,7 @@ class _BattleScreenState extends State<BattleScreen> {
         'hat': _hats[rand.nextInt(_hats.length)],
         'shoes': _shoes[rand.nextInt(_shoes.length)],
         'effect': _effects[rand.nextInt(_effects.length)],
+        'track': _tracks[rand.nextInt(_tracks.length)],
       };
     });
 
@@ -181,6 +185,7 @@ class _BattleScreenState extends State<BattleScreen> {
           'player2Hat': state.equippedHat,
           'player2Shoes': state.equippedShoes,
           'player2Effect': state.equippedEffect,
+          'player2Track': state.equippedTrack,
           'status': 'playing',
           'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 15))),
         });
@@ -203,6 +208,7 @@ class _BattleScreenState extends State<BattleScreen> {
           'player1Hat': state.equippedHat,
           'player1Shoes': state.equippedShoes,
           'player1Effect': state.equippedEffect,
+          'player1Track': state.equippedTrack,
           'player1Score': 0,
           'player1Finished': false,
           'player2Id': '',
@@ -211,6 +217,7 @@ class _BattleScreenState extends State<BattleScreen> {
           'player2Hat': '',
           'player2Shoes': '',
           'player2Effect': '',
+          'player2Track': 'track_cyber',
           'player2Score': 0,
           'player2Finished': false,
           'questions': [], // Sẽ được điền sau khi _loadQuestions() hoàn thành
@@ -277,6 +284,7 @@ class _BattleScreenState extends State<BattleScreen> {
               'player2Hat': randomOpponent['hat']!,
               'player2Shoes': randomOpponent['shoes']!,
               'player2Effect': randomOpponent['effect']!,
+              'player2Track': randomOpponent['track']!,
               'status': 'playing',
               'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 15))),
             });
@@ -376,6 +384,7 @@ class _BattleScreenState extends State<BattleScreen> {
             _opponentHatId = data['player2Hat'] ?? 'hat_cowboy';
             _opponentShoesId = data['player2Shoes'] ?? 'shoes_running';
             _opponentEffectId = data['player2Effect'] ?? 'effect_fire';
+            _opponentTrackId = data['player2Track'] ?? 'track_cyber';
             if (p2Id == 'bot_id') {
               _isBotGame = true;
             }
@@ -389,6 +398,7 @@ class _BattleScreenState extends State<BattleScreen> {
           _opponentHatId = data['player1Hat'] ?? 'hat_cowboy';
           _opponentShoesId = data['player1Shoes'] ?? 'shoes_running';
           _opponentEffectId = data['player1Effect'] ?? 'effect_fire';
+          _opponentTrackId = data['player1Track'] ?? 'track_cyber';
         });
 
         // Nếu là Guest, tải câu hỏi từ Firestore xuống khi sẵn sàng
@@ -833,6 +843,13 @@ class _BattleScreenState extends State<BattleScreen> {
     final isLastQuestion = _currentQuestionIndex >= _questions.length - 1;
     final isFinished = isLastQuestion || newScore >= 10;
 
+    final provider = Provider.of<GameProvider>(context, listen: false);
+    if (isCorrect) {
+      AudioService().playCorrect(volume: provider.state.volume);
+    } else {
+      AudioService().playWrong(volume: provider.state.volume);
+    }
+
     setState(() {
       _hasAnswered = true;
       _selectedAnswer = playerAnswer;
@@ -910,6 +927,7 @@ class _BattleScreenState extends State<BattleScreen> {
     Color iconColor;
 
     if (scoreDiff > 0) {
+      AudioService().playVictory(volume: provider.state.volume);
       titleText = "VICTORY!";
       titleColor = AppColors.accentCyan;
       contentText = "You defeated your opponent by a score of $myScore - $oppScore.\nYou received +400 Gold!";
@@ -918,12 +936,14 @@ class _BattleScreenState extends State<BattleScreen> {
       provider.updateHighScore(myScore);
       provider.addGold(400);
     } else if (scoreDiff < 0) {
+      AudioService().playDefeat(volume: provider.state.volume);
       titleText = "DEFEATED!";
       titleColor = AppColors.accentPink;
       contentText = "You lost to your opponent by a score of $myScore - $oppScore.\nYou lost the 200 Gold entry deposit!";
       iconData = Icons.sentiment_very_dissatisfied_rounded;
       iconColor = AppColors.accentPink;
     } else {
+      AudioService().playClaim(volume: provider.state.volume);
       titleText = "DRAW!";
       titleColor = AppColors.accentGold;
       contentText = "It's a draw with a score of $myScore - $oppScore.\nBoth sides pay a 10% fee (20 Gold).\nYou received 180 Gold back!";
@@ -1472,6 +1492,7 @@ class _BattleScreenState extends State<BattleScreen> {
                             hatId: playerState.equippedHat,
                             shoesId: playerState.equippedShoes,
                             effectId: playerState.equippedEffect,
+                            trackId: playerState.equippedTrack,
                           ),
                           const SizedBox(height: 12),
 
@@ -1489,6 +1510,7 @@ class _BattleScreenState extends State<BattleScreen> {
                             hatId: _opponentHatId,
                             shoesId: _opponentShoesId,
                             effectId: _opponentEffectId,
+                            trackId: _opponentTrackId,
                           ),
                         ],
                       ),
@@ -1814,11 +1836,50 @@ class _BattleScreenState extends State<BattleScreen> {
     required String hatId,
     required String shoesId,
     required String effectId,
+    required String trackId,
   }) {
     final themeColor = isPlayer ? AppColors.accentCyan : AppColors.accentPink;
-    final gradientColors = isPlayer
-        ? [AppColors.accentCyan.withOpacity(0.6), AppColors.accentCyan.withOpacity(0.05)]
-        : [AppColors.accentPink.withOpacity(0.6), AppColors.accentPink.withOpacity(0.05)];
+    
+    // Theme customization based on equipped track
+    Color trackBg = const Color(0xFF0F1322);
+    Color trackBorder = themeColor;
+    List<Color> trailGradient = isPlayer
+        ? [AppColors.accentCyan.withOpacity(0.7), AppColors.accentCyan.withOpacity(0.05)]
+        : [AppColors.accentPink.withOpacity(0.7), AppColors.accentPink.withOpacity(0.05)];
+    List<Color> finishGradient = const [Color(0xFFFFD700), Color(0xFFFF8C00)];
+    String trackWatermark = "";
+
+    if (trackId == 'track_sakura') {
+      trackBg = const Color(0xFF2E1527);
+      trackBorder = const Color(0xFFFF69B4);
+      trailGradient = [const Color(0xFFFFB7C5), const Color(0xFFFF69B4).withOpacity(0.1)];
+      finishGradient = [const Color(0xFFFFB7C5), const Color(0xFFFF1493)];
+      trackWatermark = "🌸";
+    } else if (trackId == 'track_lightning') {
+      trackBg = const Color(0xFF16102D);
+      trackBorder = const Color(0xFF9370DB);
+      trailGradient = [const Color(0xFF00FFFF), const Color(0xFF8A2BE2).withOpacity(0.1)];
+      finishGradient = [const Color(0xFF00FFFF), const Color(0xFF8A2BE2)];
+      trackWatermark = "⚡";
+    } else if (trackId == 'track_hellfire') {
+      trackBg = const Color(0xFF2C0A0A);
+      trackBorder = const Color(0xFFFF4500);
+      trailGradient = [const Color(0xFFFFD700), const Color(0xFFFF4500).withOpacity(0.1)];
+      finishGradient = [const Color(0xFFFF4500), const Color(0xFF8B0000)];
+      trackWatermark = "🔥";
+    } else if (trackId == 'track_galaxy') {
+      trackBg = const Color(0xFF0C0926);
+      trackBorder = const Color(0xFFE066FF);
+      trailGradient = [const Color(0xFFE066FF), const Color(0xFF4B0082).withOpacity(0.1)];
+      finishGradient = [const Color(0xFFFFD700), const Color(0xFF9400D3)];
+      trackWatermark = "✨";
+    } else if (trackId == 'track_gold') {
+      trackBg = const Color(0xFF281E08);
+      trackBorder = const Color(0xFFFFD700);
+      trailGradient = [const Color(0xFFFFF8DC), const Color(0xFFFFD700).withOpacity(0.1)];
+      finishGradient = [const Color(0xFFFFFFFF), const Color(0xFFFFD700)];
+      trackWatermark = "👑";
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1828,7 +1889,7 @@ class _BattleScreenState extends State<BattleScreen> {
           children: [
             Row(
               children: [
-                Icon(isPlayer ? Icons.person : Icons.smart_toy, color: themeColor, size: 14),
+                Icon(isPlayer ? Icons.person : Icons.smart_toy, color: trackBorder, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   nickname,
@@ -1842,22 +1903,23 @@ class _BattleScreenState extends State<BattleScreen> {
             ),
             Text(
               "$score / 10 PK",
-              style: TextStyle(color: themeColor, fontSize: 12, fontWeight: FontWeight.w900),
+              style: TextStyle(color: trackBorder, fontSize: 12, fontWeight: FontWeight.w900),
             ),
           ],
         ),
         const SizedBox(height: 4),
         Container(
-          height: 64,
+          height: 76,
           width: double.infinity,
+          clipBehavior: Clip.none,
           decoration: BoxDecoration(
-            color: const Color(0xFF0F1322),
+            color: trackBg,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: themeColor.withOpacity(0.3), width: 1.5),
+            border: Border.all(color: trackBorder.withOpacity(0.4), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: themeColor.withOpacity(0.1),
-                blurRadius: 8,
+                color: trackBorder.withOpacity(0.15),
+                blurRadius: 10,
                 spreadRadius: 1,
               ),
             ],
@@ -1865,6 +1927,22 @@ class _BattleScreenState extends State<BattleScreen> {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
+              // Background Watermark Emoji
+              if (trackWatermark.isNotEmpty)
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "$trackWatermark  $trackWatermark  $trackWatermark",
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: Colors.white.withOpacity(0.08),
+                        letterSpacing: 20,
+                      ),
+                    ),
+                  ),
+                ),
+
               // 1. Grid Checkpoints (10 nấc vạch kẻ)
               Positioned.fill(
                 child: Row(
@@ -1907,8 +1985,8 @@ class _BattleScreenState extends State<BattleScreen> {
                 width: finishWidth,
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
+                    gradient: LinearGradient(
+                      colors: finishGradient,
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -1918,7 +1996,7 @@ class _BattleScreenState extends State<BattleScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFFD700).withOpacity(0.5),
+                        color: finishGradient.first.withOpacity(0.5),
                         blurRadius: 10,
                       ),
                     ],
@@ -1946,7 +2024,7 @@ class _BattleScreenState extends State<BattleScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: gradientColors,
+                      colors: trailGradient,
                       begin: Alignment.centerRight,
                       end: Alignment.centerLeft,
                     ),
@@ -1955,30 +2033,18 @@ class _BattleScreenState extends State<BattleScreen> {
                 ),
               ),
 
-              // 4. Avatar Runner với Hiệu ứng Phát sáng Motion Glow
+              // 4. Avatar Runner với Hiệu ứng Phụ kiện & Phát sáng Motion Glow
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeOutCubic,
                 left: leftPos,
                 top: 4,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: themeColor.withOpacity(0.6),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: RunnerWidget(
-                    characterId: characterId,
-                    hatId: hatId,
-                    shoesId: shoesId,
-                    effectId: effectId,
-                    size: 56,
-                  ),
+                child: RunnerWidget(
+                  characterId: characterId,
+                  hatId: hatId,
+                  shoesId: shoesId,
+                  effectId: effectId,
+                  size: 48,
                 ),
               ),
             ],

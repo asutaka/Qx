@@ -8,6 +8,7 @@ import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../widgets/runner_widget.dart';
 import '../../data/services/crazy_games_service.dart';
+import '../../data/services/audio_service.dart';
 
 /// Màn hình Sảnh chính (Lobby Screen) chứa các lựa chọn chế độ chơi và quà tặng.
 class LobbyScreen extends StatefulWidget {
@@ -508,6 +509,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                     ),
                                     onPressed: () {
+                                      AudioService().playClaim(volume: gameProvider.state.volume);
                                       gameProvider.claimDaily();
                                     },
                                     child: const Text("Claim 1,000"),
@@ -543,6 +545,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                                           });
                                         }
                                         if (success) {
+                                          AudioService().playClaim(volume: gameProvider.state.volume);
                                           gameProvider.claimAd();
                                         }
                                       },

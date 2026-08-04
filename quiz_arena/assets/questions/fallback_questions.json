@@ -1,0 +1,165 @@
+{
+  "response_code": 0,
+  "results": [
+    {
+      "category": "General Knowledge",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "Which planet in our solar system is known as the Red Planet?",
+      "correct_answer": "Mars",
+      "incorrect_answers": ["Venus", "Jupiter", "Saturn"]
+    },
+    {
+      "category": "General Knowledge",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "What is the chemical symbol for Gold?",
+      "correct_answer": "Au",
+      "incorrect_answers": ["Ag", "Fe", "Cu"]
+    },
+    {
+      "category": "Science & Nature",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "What gas do plants absorb from the atmosphere for photosynthesis?",
+      "correct_answer": "Carbon Dioxide",
+      "incorrect_answers": ["Oxygen", "Nitrogen", "Hydrogen"]
+    },
+    {
+      "category": "Science & Nature",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "What is the hardest natural substance on Earth?",
+      "correct_answer": "Diamond",
+      "incorrect_answers": ["Titanium", "Graphene", "Quartz"]
+    },
+    {
+      "category": "Geography",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "What is the capital city of Japan?",
+      "correct_answer": "Tokyo",
+      "incorrect_answers": ["Kyoto", "Osaka", "Hiroshima"]
+    },
+    {
+      "category": "Geography",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "Which is the longest river in the world?",
+      "correct_answer": "Nile River",
+      "incorrect_answers": ["Amazon River", "Yangtze River", "Mississippi River"]
+    },
+    {
+      "category": "History",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "In which year did the World War II end?",
+      "correct_answer": "1945",
+      "incorrect_answers": ["1939", "1941", "1950"]
+    },
+    {
+      "category": "History",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "Who was the first President of the United States?",
+      "correct_answer": "George Washington",
+      "incorrect_answers": ["Thomas Jefferson", "Abraham Lincoln", "John Adams"]
+    },
+    {
+      "category": "Science & Nature",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "How many bones are in the adult human body?",
+      "correct_answer": "206",
+      "incorrect_answers": ["210", "196", "300"]
+    },
+    {
+      "category": "General Knowledge",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "Which element has the atomic number 1?",
+      "correct_answer": "Hydrogen",
+      "incorrect_answers": ["Helium", "Lithium", "Carbon"]
+    },
+    {
+      "category": "Geography",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "Which country has the largest population in the world?",
+      "correct_answer": "India",
+      "incorrect_answers": ["China", "United States", "Indonesia"]
+    },
+    {
+      "category": "General Knowledge",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "What is the fastest land animal?",
+      "correct_answer": "Cheetah",
+      "incorrect_answers": ["Lion", "Pronghorn", "Gazelle"]
+    },
+    {
+      "category": "Science & Nature",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "What is the main component of the sun?",
+      "correct_answer": "Hydrogen",
+      "incorrect_answers": ["Helium", "Oxygen", "Iron"]
+    },
+    {
+      "category": "Geography",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "Which ocean is the largest on Earth?",
+      "correct_answer": "Pacific Ocean",
+      "incorrect_answers": ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean"]
+    },
+    {
+      "category": "Science & Nature",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "What speed does light travel in a vacuum?",
+      "correct_answer": "300,000 km/s",
+      "incorrect_answers": ["150,000 km/s", "1,000,000 km/s", "30,000 km/s"]
+    },
+    {
+      "category": "General Knowledge",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "Which organ pumps blood throughout the human body?",
+      "correct_answer": "Heart",
+      "incorrect_answers": ["Brain", "Lungs", "Liver"]
+    },
+    {
+      "category": "History",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "Who painted the Mona Lisa?",
+      "correct_answer": "Leonardo da Vinci",
+      "incorrect_answers": ["Vincent van Gogh", "Pablo Picasso", "Michelangelo"]
+    },
+    {
+      "category": "Geography",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "Which country is known as the Land of the Rising Sun?",
+      "correct_answer": "Japan",
+      "incorrect_answers": ["China", "South Korea", "Thailand"]
+    },
+    {
+      "category": "General Knowledge",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "What is the largest mammal in the world?",
+      "correct_answer": "Blue Whale",
+      "incorrect_answers": ["African Elephant", "Giraffe", "Hippopotamus"]
+    },
+    {
+      "category": "Science & Nature",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "What is the boiling point of water at sea level in Celsius?",
+      "correct_answer": "100°C",
+      "incorrect_answers": ["90°C", "120°C", "80°C"]
+    }
+  ]
+}

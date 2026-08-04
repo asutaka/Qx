@@ -18,18 +18,23 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Quiz Arena - Competitive Cyberpunk & Neon 1v1 Realtime Trivia Game. Test your brain against online opponents!">
+
+  <!-- OpenGraph Meta Tags -->
+  <meta property="og:title" content="Quiz Arena - Realtime PvP Trivia Game">
+  <meta property="og:description" content="Race against real players in fast-paced 1v1 trivia battles. Unlock skins, hats, and claim daily rewards!">
+  <meta property="og:image" content="icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="quiz_arena">
+  <meta name="apple-mobile-web-app-title" content="Quiz Arena">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>quiz_arena</title>
+  <title>Quiz Arena - Realtime PvP Trivia Game</title>
   <link rel="manifest" href="manifest.json">
 
   <!-- CrazyGames SDK v2 -->
@@ -40,19 +45,25 @@
     window.addEventListener('load', function() {
       if (window.CrazyGames && window.CrazyGames.SDK) {
         crazySdk = window.CrazyGames.SDK;
-        console.log("CrazyGames SDK loaded.");
+        console.log("CrazyGames SDK loaded successfully.");
       }
     });
 
     window.getCrazyUserId = async function() {
       if (!crazySdk) return null;
       try {
-        const user = await crazySdk.user.getUser();
-        if (user) {
-          return user.id;
+        if (crazySdk.user && typeof crazySdk.user.getUserToken === 'function') {
+          const token = await crazySdk.user.getUserToken();
+          if (token) return token;
+        }
+        if (crazySdk.user && typeof crazySdk.user.getUser === 'function') {
+          const user = await crazySdk.user.getUser();
+          if (user && (user.id || user.username)) {
+            return user.id || user.username;
+          }
         }
       } catch (e) {
-        console.error("Error getting CrazyGames user ID:", e);
+        console.warn("CrazyGames user authentication notice:", e);
       }
       return null;
     };
@@ -79,6 +90,151 @@
           }
         });
       });
+    };
+
+    // Web Audio Synthesizer for Quiz SFX
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    window.playQuizSfx = function(sfxType, volumeRatio) {
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const vol = (typeof volumeRatio === 'number') ? volumeRatio : 0.8;
+        if (vol <= 0) return;
+
+        const masterGain = ctx.createGain();
+        masterGain.gain.value = vol * 0.3; // Master ceiling
+        masterGain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+
+        if (sfxType === 'correct') {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          osc1.type = 'sine';
+          osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(523.25, now); // C5
+          osc1.frequency.setValueAtTime(659.25, now + 0.1); // E5
+          osc2.frequency.setValueAtTime(1046.50, now + 0.1); // C6
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(masterGain);
+
+          osc1.start(now);
+          osc2.start(now + 0.1);
+          osc1.stop(now + 0.4);
+          osc2.stop(now + 0.4);
+        } else if (sfxType === 'wrong') {
+          const osc = ctx.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.5, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+          osc.connect(gain);
+          gain.connect(masterGain);
+
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (sfxType === 'click') {
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+
+          osc.connect(gain);
+          gain.connect(masterGain);
+
+          osc.start(now);
+          osc.stop(now + 0.04);
+        } else if (sfxType === 'claim') {
+          const freqs = [523.25, 659.25, 783.99, 1046.50];
+          freqs.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(0.4, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.2);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.2);
+          });
+        } else if (sfxType === 'victory') {
+          const notes = [
+            { f: 523.25, t: 0, d: 0.15 },
+            { f: 659.25, t: 0.15, d: 0.15 },
+            { f: 783.99, t: 0.30, d: 0.15 },
+            { f: 1046.50, t: 0.45, d: 0.5 }
+          ];
+          notes.forEach(note => {
+            const osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(note.f, now + note.t);
+
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(0.5, now + note.t);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + note.t + note.d);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+
+            osc.start(now + note.t);
+            osc.stop(now + note.t + note.d);
+          });
+        } else if (sfxType === 'defeat') {
+          const notes = [
+            { f: 440, t: 0, d: 0.2 },
+            { f: 415.30, t: 0.2, d: 0.2 },
+            { f: 369.99, t: 0.4, d: 0.4 }
+          ];
+          notes.forEach(note => {
+            const osc = ctx.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(note.f, now + note.t);
+
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(0.4, now + note.t);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + note.t + note.d);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+
+            osc.start(now + note.t);
+            osc.stop(now + note.t + note.d);
+          });
+        }
+      } catch (e) {
+        console.warn("Error playing Sfx:", e);
+      }
     };
   </script>
 </head>

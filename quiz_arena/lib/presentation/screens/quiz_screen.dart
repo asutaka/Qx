@@ -11,6 +11,7 @@ import '../../data/services/trivia_api_service.dart';
 import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../../data/services/translation_service.dart';
+import '../../data/services/audio_service.dart';
 
 /// Màn hình Chơi đơn Single Mode (Ai Là Triệu Phú - 100 câu hỏi khó dần)
 class QuizScreen extends StatefulWidget {
@@ -326,9 +327,12 @@ class _QuizScreenState extends State<QuizScreen> {
     _timer?.cancel();
     final currentQuestion = _questions[_currentIndex];
     final isCorrect = (answer != null && answer == currentQuestion.correctAnswer);
+    final provider = Provider.of<GameProvider>(context, listen: false);
+    final vol = provider.state.volume;
 
     // Xử lý quyền Trả lời 2 lần (nếu trả lời sai ở lần đầu)
     if (!isCorrect && _isDoubleAnswerActive) {
+      AudioService().playWrong(volume: vol);
       setState(() {
         _isDoubleAnswerActive = false; // Sử dụng cơ hội thứ 2 xong
         _selectedAnswer = null;
@@ -338,6 +342,12 @@ class _QuizScreenState extends State<QuizScreen> {
       });
       _startTimer(resume: true); // Tiếp tục đếm ngược từ số giây còn lại
       return;
+    }
+
+    if (isCorrect) {
+      AudioService().playCorrect(volume: vol);
+    } else {
+      AudioService().playWrong(volume: vol);
     }
 
     setState(() {
@@ -372,6 +382,7 @@ class _QuizScreenState extends State<QuizScreen> {
   void _gameOver() {
     final provider = Provider.of<GameProvider>(context, listen: false);
     provider.updateHighScore(_score);
+    AudioService().playDefeat(volume: provider.state.volume);
     
     // Tặng thưởng vàng dựa trên số câu trả lời đúng (1 câu = 10 vàng)
     final rewardGold = _score * 10;

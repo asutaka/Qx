@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/theme/colors.dart';
 import 'logic/game_provider.dart';
 import 'presentation/screens/lobby_screen.dart';
@@ -36,10 +37,11 @@ class QuizArenaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final darkTheme = ThemeData.dark();
     return MaterialApp(
       title: 'Quiz Arena',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
+      theme: darkTheme.copyWith(
         scaffoldBackgroundColor: AppColors.bgPrimary,
         primaryColor: AppColors.accentCyan,
         colorScheme: const ColorScheme.dark(
@@ -47,6 +49,7 @@ class QuizArenaApp extends StatelessWidget {
           secondary: AppColors.accentPink,
           background: AppColors.bgPrimary,
         ),
+        textTheme: GoogleFonts.notoSansTextTheme(darkTheme.textTheme),
       ),
       home: const MainNavigationController(),
     );

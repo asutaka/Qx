@@ -14,6 +14,7 @@ class LocalGameState {
   final String equippedShoes;
   final String equippedEffect;
   final String equippedCharacter;
+  final String equippedTrack;
   final String country;
 
   LocalGameState({
@@ -31,6 +32,7 @@ class LocalGameState {
     required this.equippedShoes,
     required this.equippedEffect,
     required this.equippedCharacter,
+    required this.equippedTrack,
     required this.country,
   });
 
@@ -46,11 +48,12 @@ class LocalGameState {
       lastAdClaim: 0,
       targetLanguage: "en",
       downloadedLanguages: const ["en", "vi"],
-      ownedItems: const ["hat_none", "shoes_none", "effect_none", "char_khoi_nguyen_m", "char_khoi_nguyen_f"],
+      ownedItems: const ["hat_none", "shoes_none", "effect_none", "track_cyber", "char_khoi_nguyen_m", "char_khoi_nguyen_f"],
       equippedHat: "hat_none",
       equippedShoes: "shoes_none",
       equippedEffect: "effect_none",
       equippedCharacter: "char_khoi_nguyen_m",
+      equippedTrack: "track_cyber",
       country: "vn",
     );
   }
@@ -71,6 +74,7 @@ class LocalGameState {
     String? equippedShoes,
     String? equippedEffect,
     String? equippedCharacter,
+    String? equippedTrack,
     String? country,
   }) {
     return LocalGameState(
@@ -88,6 +92,7 @@ class LocalGameState {
       equippedShoes: equippedShoes ?? this.equippedShoes,
       equippedEffect: equippedEffect ?? this.equippedEffect,
       equippedCharacter: equippedCharacter ?? this.equippedCharacter,
+      equippedTrack: equippedTrack ?? this.equippedTrack,
       country: country ?? this.country,
     );
   }
@@ -109,6 +114,7 @@ class LocalGameState {
       'equippedShoes': equippedShoes,
       'equippedEffect': equippedEffect,
       'equippedCharacter': equippedCharacter,
+      'equippedTrack': equippedTrack,
       'country': country,
     };
   }
@@ -133,12 +139,13 @@ class LocalGameState {
           ? const ["en", "vi"] 
           : parseList(map['downloadedLanguages']),
       ownedItems: parseList(map['ownedItems']).isEmpty
-          ? const ["hat_none", "shoes_none", "effect_none", "char_khoi_nguyen_m", "char_khoi_nguyen_f"]
+          ? const ["hat_none", "shoes_none", "effect_none", "track_cyber", "char_khoi_nguyen_m", "char_khoi_nguyen_f"]
           : parseList(map['ownedItems']),
       equippedHat: map['equippedHat'] ?? "hat_none",
       equippedShoes: map['equippedShoes'] ?? "shoes_none",
       equippedEffect: map['equippedEffect'] ?? "effect_none",
       equippedCharacter: map['equippedCharacter'] ?? "char_khoi_nguyen_m",
+      equippedTrack: map['equippedTrack'] ?? "track_cyber",
       country: map['country'] ?? "vn",
     );
   }

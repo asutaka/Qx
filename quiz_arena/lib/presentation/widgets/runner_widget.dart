@@ -30,17 +30,29 @@ class RunnerWidget extends StatelessWidget {
     // Thiết lập màu sắc và cường độ phát sáng dựa trên hiệu ứng vệt chạy
     Color glowColor = Colors.transparent;
     double glowBlur = 0.0;
-    if (effectId == 'effect_fire') {
+    if (effectId == 'effect_bubbles') {
+      glowColor = const Color(0xFF00BFFF);
+      glowBlur = 10.0;
+    } else if (effectId == 'effect_hearts') {
       glowColor = AppColors.accentPink;
       glowBlur = 12.0;
+    } else if (effectId == 'effect_stars') {
+      glowColor = AppColors.accentGold;
+      glowBlur = 12.0;
+    } else if (effectId == 'effect_fire') {
+      glowColor = const Color(0xFFFF4500);
+      glowBlur = 14.0;
+    } else if (effectId == 'effect_lightning') {
+      glowColor = const Color(0xFF9370DB);
+      glowBlur = 14.0;
     } else if (effectId == 'effect_rainbow') {
       glowColor = AppColors.accentCyan;
-      glowBlur = 12.0;
+      glowBlur = 16.0;
     }
 
     return SizedBox(
-      width: size + 16,
-      height: size + 16,
+      width: size + 20,
+      height: size + 20,
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -48,11 +60,11 @@ class RunnerWidget extends StatelessWidget {
           // 1. Vẽ Emoji vệt hiệu ứng bám gót chạy phía sau
           if (effect.assetOrEmoji.isNotEmpty)
             Positioned(
-              left: -8,
-              bottom: 4,
+              left: -4,
+              bottom: 8,
               child: Text(
                 effect.assetOrEmoji,
-                style: const TextStyle(fontSize: 20),
+                style: TextStyle(fontSize: size * 0.38),
               ),
             ),
             
@@ -92,24 +104,24 @@ class RunnerWidget extends StatelessWidget {
             ),
           ),
 
-          // 3. Mũ (Đặt ở vị trí phía trên đầu avatar)
+          // 3. Mũ (Đặt ở vị trí đỉnh đầu avatar)
           if (hat.assetOrEmoji.isNotEmpty)
             Positioned(
-              top: -10,
+              top: 0,
               child: Text(
                 hat.assetOrEmoji,
-                style: const TextStyle(fontSize: 22),
+                style: TextStyle(fontSize: size * 0.42),
               ),
             ),
 
           // 4. Giày (Đặt ở vị trí góc chân avatar)
           if (shoes.assetOrEmoji.isNotEmpty)
             Positioned(
-              bottom: -4,
-              right: 6,
+              bottom: 0,
+              right: 2,
               child: Text(
                 shoes.assetOrEmoji,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: size * 0.35),
               ),
             ),
         ],
