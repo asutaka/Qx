@@ -143,7 +143,7 @@ class _BattleScreenState extends State<BattleScreen> {
       final provider = Provider.of<GameProvider>(context, listen: false);
       final state = provider.state;
 
-      // 1. Tìm xem có phòng nào đang ở trạng thái waiting không
+      // 1. Tìm xem có phòng nào đang ở trạng thái waiting không (bỏ qua phòng của chính mình)
       final query = await FirebaseFirestore.instance
           .collection('rooms')
           .where('status', isEqualTo: 'waiting')
@@ -155,12 +155,14 @@ class _BattleScreenState extends State<BattleScreen> {
       for (final doc in query.docs) {
         final data = doc.data();
         final createdAt = data['createdAt'] as int? ?? 0;
-        // Chỉ nhận phòng được tạo trong vòng 15 giây qua để tránh phòng "rác" của phiên cũ
-        if ((now - createdAt).abs() < 15000) {
+        final p1Id = data['player1Id'] as String? ?? '';
+
+        // Chỉ chọn phòng do người khác tạo trong 15s gần đây
+        if (p1Id != _playerId && (now - createdAt).abs() < 15000) {
           validRoom = doc;
           break;
-        } else {
-          // Xóa phòng rác để dọn dẹp Firestore
+        } else if ((now - createdAt).abs() >= 15000) {
+          // Xóa phòng rác cũ
           FirebaseFirestore.instance.collection('rooms').doc(doc.id).delete().catchError((e) => null);
         }
       }
@@ -182,17 +184,15 @@ class _BattleScreenState extends State<BattleScreen> {
           'status': 'playing',
           'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 15))),
         });
-        
+
         _subscribeToRoom();
       } else {
-        // Không có phòng nào đợi -> Tạo phòng mới làm Player 1 (Host)
+        // Không có phòng nào đợi -> Tạo phòng mới làm Player 1 (Host) NGAY LẬP TỨC!
         _roomId = _playerId;
         _isHost = true;
         _isBotGame = false;
 
-        // Tải câu hỏi từ API trước khi tạo phòng
-        await _loadQuestions();
-
+        // Tạo phòng lên Firestore NGAY trước khi load questions để các client khác tìm thấy ngay
         await FirebaseFirestore.instance.collection('rooms').doc(_roomId).set({
           'status': 'waiting',
           'createdAt': DateTime.now().millisecondsSinceEpoch,
@@ -213,12 +213,21 @@ class _BattleScreenState extends State<BattleScreen> {
           'player2Effect': '',
           'player2Score': 0,
           'player2Finished': false,
-          'questions': _questions.map((q) => q.toJson()).toList(),
+          'questions': [], // Sẽ được điền sau khi _loadQuestions() hoàn thành
           'winnerId': '',
         });
 
         _subscribeToRoom();
         _startMatchmakingCountdown();
+
+        // Tải câu hỏi từ API ở background và đẩy lên Firestore
+        _loadQuestions().then((_) async {
+          if (_roomId != null && _isHost && mounted) {
+            await FirebaseFirestore.instance.collection('rooms').doc(_roomId).update({
+              'questions': _questions.map((q) => q.toJson()).toList(),
+            }).catchError((e) => print("Lỗi cập nhật questions cho room: $e"));
+          }
+        });
       }
     } catch (e) {
       print("Lỗi khởi tạo trận đấu realtime: $e");
@@ -249,6 +258,10 @@ class _BattleScreenState extends State<BattleScreen> {
           setState(() {
             _matchmakingSec--;
           });
+          // Kiểm tra định kỳ xem có phòng ngẫu nhiên khác do Host khác tạo đồng thời không
+          if (_isHost && _opponentId.isEmpty) {
+            _checkForOtherWaitingRooms();
+          }
         }
       } else {
         _matchmakingTimer?.cancel();
@@ -273,6 +286,67 @@ class _BattleScreenState extends State<BattleScreen> {
         }
       }
     });
+  }
+
+  /// Tự động kiểm tra nếu có Host khác vừa tạo phòng waiting song song để gộp vào 1 phòng
+  Future<void> _checkForOtherWaitingRooms() async {
+    if (!_isHost || !_isMatchmaking || _opponentId.isNotEmpty || _roomId == null) return;
+
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where('status', isEqualTo: 'waiting')
+          .get();
+
+      final now = DateTime.now().millisecondsSinceEpoch;
+      DocumentSnapshot? otherRoom;
+
+      for (final doc in query.docs) {
+        if (doc.id == _roomId) continue;
+        final data = doc.data();
+        final p1Id = data['player1Id'] as String? ?? '';
+        final createdAt = data['createdAt'] as int? ?? 0;
+
+        if (p1Id != _playerId && (now - createdAt).abs() < 15000) {
+          // Ưu tiên ghép vào phòng được tạo trước (hoặc có ID nhỏ hơn nếu cùng timestamp)
+          final myDoc = await FirebaseFirestore.instance.collection('rooms').doc(_roomId).get();
+          final myCreatedAt = (myDoc.data()?['createdAt'] as int?) ?? now;
+
+          if (createdAt < myCreatedAt || (createdAt == myCreatedAt && doc.id.compareTo(_roomId!) < 0)) {
+            otherRoom = doc;
+            break;
+          }
+        }
+      }
+
+      if (otherRoom != null && mounted && _isMatchmaking && _opponentId.isEmpty) {
+        final targetRoomId = otherRoom.id;
+        final provider = Provider.of<GameProvider>(context, listen: false);
+        final state = provider.state;
+
+        // Cập nhật tham gia phòng của Host khác làm Player 2
+        await FirebaseFirestore.instance.collection('rooms').doc(targetRoomId).update({
+          'player2Id': _playerId,
+          'player2Name': state.nickname,
+          'player2Character': state.equippedCharacter,
+          'player2Hat': state.equippedHat,
+          'player2Shoes': state.equippedShoes,
+          'player2Effect': state.equippedEffect,
+          'status': 'playing',
+          'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 15))),
+        });
+
+        // Xóa phòng rác do mình tự tạo trước đó
+        FirebaseFirestore.instance.collection('rooms').doc(_roomId).delete().catchError((e) => null);
+
+        // Chuyển vai trò sang Guest và lắng nghe phòng mới
+        _roomId = targetRoomId;
+        _isHost = false;
+        _subscribeToRoom();
+      }
+    } catch (e) {
+      print("Lỗi re-check waiting rooms: $e");
+    }
   }
 
   /// Đăng ký lắng nghe các thay đổi của phòng trên Firestore
@@ -317,19 +391,21 @@ class _BattleScreenState extends State<BattleScreen> {
           _opponentEffectId = data['player1Effect'] ?? 'effect_fire';
         });
 
-        // Nếu là Guest, tải câu hỏi từ Firestore xuống
-        if (_questions.isEmpty) {
+        // Nếu là Guest, tải câu hỏi từ Firestore xuống khi sẵn sàng
+        if (_questions.isEmpty && data['questions'] != null) {
           final qList = data['questions'] as List;
-          setState(() {
-            _questions = qList.map((q) => Question.fromJson(q)).toList();
-            _isLoading = false;
-          });
+          if (qList.isNotEmpty) {
+            setState(() {
+              _questions = qList.map((q) => Question.fromJson(q)).toList();
+              _isLoading = false;
+            });
+          }
         }
       }
 
       // Cập nhật điểm số real-time từ Firestore
-      final p1Score = data['player1Score'] as int;
-      final p2Score = data['player2Score'] as int;
+      final p1Score = data['player1Score'] as int? ?? 0;
+      final p2Score = data['player2Score'] as int? ?? 0;
       if (mounted) {
         setState(() {
           _playerScore = _isHost ? p1Score : p2Score;
@@ -337,13 +413,20 @@ class _BattleScreenState extends State<BattleScreen> {
         });
       }
 
-      // Bắt đầu game khi phòng chuyển trạng thái playing
+      // Bắt đầu game khi phòng chuyển trạng thái playing VÀ câu hỏi đã tải thành công
+      final roomQuestions = data['questions'] as List? ?? [];
       if (_isMatchmaking && status == 'playing') {
-        _matchmakingTimer?.cancel();
-        setState(() {
-          _isMatchmaking = false;
-        });
-        _startQuestionRound();
+        if (_questions.isEmpty && roomQuestions.isNotEmpty) {
+          _questions = roomQuestions.map((q) => Question.fromJson(q)).toList();
+        }
+        if (_questions.isNotEmpty) {
+          _matchmakingTimer?.cancel();
+          setState(() {
+            _isMatchmaking = false;
+            _isLoading = false;
+          });
+          _startQuestionRound();
+        }
       }
 
       // Kiểm tra kết thúc trận đấu
@@ -688,7 +771,7 @@ class _BattleScreenState extends State<BattleScreen> {
 
   /// Bắt đầu một vòng câu hỏi mới
   void _startQuestionRound() {
-    if (_currentQuestionIndex >= _questions.length || _playerScore >= 10 || _botScore >= 10) {
+    if (_questions.isEmpty || _currentQuestionIndex >= _questions.length || _playerScore >= 10 || _botScore >= 10) {
       return;
     }
 
