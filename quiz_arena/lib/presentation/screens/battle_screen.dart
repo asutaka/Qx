@@ -72,6 +72,12 @@ class _BattleScreenState extends State<BattleScreen> {
   String? _translatedQuestion;
   Map<String, String> _translatedAnswers = {};
 
+  // Streak Combo
+  int _playerStreakCount = 0;
+  String? _playerComboText;
+  Color _playerComboColor = Colors.orange;
+  bool _showPlayerComboBadge = false;
+
   static final List<String> _firstNames = [
     'Speedy', 'Quiz', 'Runner', 'Alpha', 'Beta', 'Hyper', 'Swift', 'Apex', 'Brainy',
     'Mega', 'Smart', 'Master', 'Super', 'Turbo', 'Flash', 'Pro', 'Champion', 'Elite',
@@ -839,16 +845,40 @@ class _BattleScreenState extends State<BattleScreen> {
     _botActionTimer?.cancel();
 
     final isCorrect = playerAnswer != null && playerAnswer == _questions[_currentQuestionIndex].correctAnswer;
-    final newScore = isCorrect ? _playerScore + 1 : _playerScore;
-    final isLastQuestion = _currentQuestionIndex >= _questions.length - 1;
-    final isFinished = isLastQuestion || newScore >= 10;
-
     final provider = Provider.of<GameProvider>(context, listen: false);
+    int bonusScore = 0;
     if (isCorrect) {
       AudioService().playCorrect(volume: provider.state.volume);
+      _playerStreakCount++;
+
+      if (_playerStreakCount == 2) {
+        _playerComboText = "🔥 2X COMBO! (+1 Bonus PK)";
+        _playerComboColor = const Color(0xFFFF8C00);
+        _showPlayerComboBadge = true;
+        bonusScore = 1;
+        AudioService().playClaim(volume: provider.state.volume);
+      } else if (_playerStreakCount == 3) {
+        _playerComboText = "⚡ 3X SUPER COMBO! (+2 Bonus PK)";
+        _playerComboColor = const Color(0xFF00FFFF);
+        _showPlayerComboBadge = true;
+        bonusScore = 2;
+        AudioService().playClaim(volume: provider.state.volume);
+      } else if (_playerStreakCount >= 5) {
+        _playerComboText = "🌌 ${_playerStreakCount}X ULTRA COMBO! (+3 Bonus PK)";
+        _playerComboColor = const Color(0xFFFF00FF);
+        _showPlayerComboBadge = true;
+        bonusScore = 3;
+        AudioService().playClaim(volume: provider.state.volume);
+      }
     } else {
       AudioService().playWrong(volume: provider.state.volume);
+      _playerStreakCount = 0;
+      _showPlayerComboBadge = false;
     }
+
+    final newScore = isCorrect ? _playerScore + 1 + bonusScore : _playerScore;
+    final isLastQuestion = _currentQuestionIndex >= _questions.length - 1;
+    final isFinished = isLastQuestion || newScore >= 10;
 
     setState(() {
       _hasAnswered = true;
@@ -1518,7 +1548,40 @@ class _BattleScreenState extends State<BattleScreen> {
                   },
                 ),
               ),
-              // 2.5 Translation toggle bar
+              // 2.5 Streak Combo Badge
+              if (_showPlayerComboBadge && _playerComboText != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _playerComboColor.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: _playerComboColor, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _playerComboColor.withOpacity(0.4),
+                            blurRadius: 14,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        _playerComboText!,
+                        style: TextStyle(
+                          color: _playerComboColor,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // 2.6 Translation toggle bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Align(

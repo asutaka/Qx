@@ -54,6 +54,13 @@ class _QuizScreenState extends State<QuizScreen> {
   String? _translatedQuestion;
   Map<String, String> _translatedAnswers = {};
 
+  // Streak Combo
+  int _streakCount = 0;
+  int _maxStreak = 0;
+  String? _comboText;
+  Color _comboColor = Colors.orange;
+  bool _showComboBadge = false;
+
   @override
   void initState() {
     super.initState();
@@ -346,8 +353,31 @@ class _QuizScreenState extends State<QuizScreen> {
 
     if (isCorrect) {
       AudioService().playCorrect(volume: vol);
+      _streakCount++;
+      if (_streakCount > _maxStreak) {
+        _maxStreak = _streakCount;
+      }
+
+      if (_streakCount == 2) {
+        _comboText = "🔥 2X COMBO!";
+        _comboColor = const Color(0xFFFF8C00);
+        _showComboBadge = true;
+        AudioService().playClaim(volume: vol);
+      } else if (_streakCount == 3) {
+        _comboText = "⚡ 3X SUPER COMBO!";
+        _comboColor = const Color(0xFF00FFFF);
+        _showComboBadge = true;
+        AudioService().playClaim(volume: vol);
+      } else if (_streakCount >= 5) {
+        _comboText = "🌌 ${_streakCount}X ULTRA COMBO!";
+        _comboColor = const Color(0xFFFF00FF);
+        _showComboBadge = true;
+        AudioService().playClaim(volume: vol);
+      }
     } else {
       AudioService().playWrong(volume: vol);
+      _streakCount = 0;
+      _showComboBadge = false;
     }
 
     setState(() {
@@ -685,6 +715,42 @@ class _QuizScreenState extends State<QuizScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Streak Combo Badge Overlay
+                        if (_showComboBadge && _comboText != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: _comboColor.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: _comboColor, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _comboColor.withOpacity(0.4),
+                                    blurRadius: 16,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _comboText!,
+                                    style: TextStyle(
+                                      color: _comboColor,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 15,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
                         // Translation toggle button (directly above the card)
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
