@@ -16,6 +16,7 @@ import '../widgets/glass_container.dart';
 import '../widgets/runner_widget.dart';
 import '../../data/services/translation_service.dart';
 import '../../data/services/audio_service.dart';
+import '../../data/services/crazy_games_service.dart';
 
 /// Màn hình Đua đối kháng Battle Mode 1v1 (Realtime PvP với Bot fallback)
 class BattleScreen extends StatefulWidget {
@@ -133,6 +134,7 @@ class _BattleScreenState extends State<BattleScreen> {
 
   @override
   void dispose() {
+    CrazyGamesService.gameplayStop();
     _matchmakingTimer?.cancel();
     _questionTimer?.cancel();
     _botActionTimer?.cancel();
@@ -437,6 +439,7 @@ class _BattleScreenState extends State<BattleScreen> {
         }
         if (_questions.isNotEmpty) {
           _matchmakingTimer?.cancel();
+          CrazyGamesService.gameplayStart();
           setState(() {
             _isMatchmaking = false;
             _isLoading = false;
@@ -936,6 +939,7 @@ class _BattleScreenState extends State<BattleScreen> {
     if (_gameEnded) return;
     _gameEnded = true;
 
+    CrazyGamesService.gameplayStop();
     _questionTimer?.cancel();
     _botActionTimer?.cancel();
     _roomSubscription?.cancel();
@@ -958,6 +962,7 @@ class _BattleScreenState extends State<BattleScreen> {
 
     if (scoreDiff > 0) {
       AudioService().playVictory(volume: provider.state.volume);
+      CrazyGamesService.happyTime();
       titleText = "VICTORY!";
       titleColor = AppColors.accentCyan;
       contentText = "You defeated your opponent by a score of $myScore - $oppScore.\nYou received +400 Gold!";
@@ -1163,6 +1168,7 @@ class _BattleScreenState extends State<BattleScreen> {
 
   /// Kết thúc trận đấu Offline / Lỗi
   void _endGameOffline() {
+    CrazyGamesService.gameplayStop();
     _questionTimer?.cancel();
     _botActionTimer?.cancel();
 
@@ -1176,6 +1182,7 @@ class _BattleScreenState extends State<BattleScreen> {
     Color iconColor;
 
     if (scoreDiff > 0) {
+      CrazyGamesService.happyTime();
       titleText = "VICTORY!";
       titleColor = AppColors.accentCyan;
       contentText = "You defeated your opponent by a score of $_playerScore - $_botScore.\nYou received +400 Gold!";

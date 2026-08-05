@@ -12,6 +12,7 @@ import '../../logic/game_provider.dart';
 import '../widgets/glass_container.dart';
 import '../../data/services/translation_service.dart';
 import '../../data/services/audio_service.dart';
+import '../../data/services/crazy_games_service.dart';
 
 /// Màn hình Chơi đơn Single Mode (Ai Là Triệu Phú - 100 câu hỏi khó dần)
 class QuizScreen extends StatefulWidget {
@@ -64,11 +65,13 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   void initState() {
     super.initState();
+    CrazyGamesService.gameplayStart();
     _loadDifficultyQuestions();
   }
 
   @override
   void dispose() {
+    CrazyGamesService.gameplayStop();
     _timer?.cancel();
     super.dispose();
   }
@@ -373,6 +376,7 @@ class _QuizScreenState extends State<QuizScreen> {
         _comboColor = const Color(0xFFFF00FF);
         _showComboBadge = true;
         AudioService().playClaim(volume: vol);
+        CrazyGamesService.happyTime();
       }
     } else {
       AudioService().playWrong(volume: vol);
@@ -410,6 +414,7 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _gameOver() {
+    CrazyGamesService.gameplayStop();
     final provider = Provider.of<GameProvider>(context, listen: false);
     provider.updateHighScore(_score);
     AudioService().playDefeat(volume: provider.state.volume);

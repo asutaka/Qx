@@ -12,4 +12,19 @@ class CrazyGamesService {
   static Future<bool> showAd(String adType) async {
     return showCrazyAdImpl(adType);
   }
+
+  /// Báo hiệu CrazyGames SDK khi bắt đầu chơi game (Gameplay Start)
+  static void gameplayStart() {
+    crazyGameplayStartImpl();
+  }
+
+  /// Báo hiệu CrazyGames SDK khi tạm dừng hoặc kết thúc ván chơi (Gameplay Stop)
+  static void gameplayStop() {
+    crazyGameplayStopImpl();
+  }
+
+  /// Báo hiệu CrazyGames SDK khi người chơi đạt thành tích cao / ván thắng kịch tính (Happy Time)
+  static void happyTime() {
+    crazyHappyTimeImpl();
+  }
 }

@@ -68,9 +68,30 @@
       return null;
     };
 
+    window.crazyGameplayStart = function() {
+      if (crazySdk && crazySdk.game && typeof crazySdk.game.gameplayStart === 'function') {
+        crazySdk.game.gameplayStart();
+        console.log("CrazyGames gameplayStart triggered.");
+      }
+    };
+
+    window.crazyGameplayStop = function() {
+      if (crazySdk && crazySdk.game && typeof crazySdk.game.gameplayStop === 'function') {
+        crazySdk.game.gameplayStop();
+        console.log("CrazyGames gameplayStop triggered.");
+      }
+    };
+
+    window.crazyHappyTime = function() {
+      if (crazySdk && crazySdk.game && typeof crazySdk.game.happytime === 'function') {
+        crazySdk.game.happytime();
+        console.log("CrazyGames happytime triggered.");
+      }
+    };
+
     window.showCrazyAd = function(adType) {
       return new Promise((resolve, reject) => {
-        if (!crazySdk) {
+        if (!crazySdk || !crazySdk.ad) {
           console.log("CrazyGames SDK not initialized. Simulating " + adType + " ad success.");
           resolve(true);
           return;
@@ -79,13 +100,22 @@
         crazySdk.ad.requestAd(adType, {
           adStarted: () => {
             console.log(adType + " ad started.");
+            if (window.onCrazyAdStateChanged) {
+              window.onCrazyAdStateChanged(true);
+            }
           },
           adFinished: () => {
             console.log(adType + " ad finished successfully.");
+            if (window.onCrazyAdStateChanged) {
+              window.onCrazyAdStateChanged(false);
+            }
             resolve(true);
           },
           adError: (error) => {
             console.error(adType + " ad error: ", error);
+            if (window.onCrazyAdStateChanged) {
+              window.onCrazyAdStateChanged(false);
+            }
             resolve(false);
           }
         });

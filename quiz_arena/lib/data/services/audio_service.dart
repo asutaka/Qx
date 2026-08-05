@@ -6,8 +6,17 @@ class AudioService {
   factory AudioService() => _instance;
   AudioService._internal();
 
+  bool _isMuted = false;
+  bool get isMuted => _isMuted;
+
+  /// Đặt trạng thái Mute (tạm dừng toàn bộ âm thanh, dùng khi quảng cáo hiển thị)
+  void setMuted(bool muted) {
+    _isMuted = muted;
+  }
+
   /// Phát hiệu ứng âm thanh theo loại và tỉ lệ âm lượng (0 đến 100)
   void playSfx(String sfxType, {int volume = 80}) {
+    if (_isMuted) return;
     final ratio = (volume.clamp(0, 100)) / 100.0;
     if (ratio <= 0) return;
     playSfxImpl(sfxType, ratio);
