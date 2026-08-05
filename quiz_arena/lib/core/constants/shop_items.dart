@@ -20,22 +20,33 @@ class ShopItem {
 
 class AppShopItems {
   static const List<ShopItem> characters = [
+    // Common (0 - 800 Coins)
     ShopItem(id: "char_khoi_nguyen_m", name: "Genesis Male 🎩", price: 0, assetOrEmoji: "assets/characters/char_khoi_nguyen_m.webp", rarity: ItemRarity.common),
     ShopItem(id: "char_khoi_nguyen_f", name: "Genesis Female 👒", price: 0, assetOrEmoji: "assets/characters/char_khoi_nguyen_f.webp", rarity: ItemRarity.common),
     ShopItem(id: "char_birthday_m", name: "Birthday Boy 🎂", price: 600, assetOrEmoji: "assets/characters/char_birthday_m.webp", rarity: ItemRarity.common),
     ShopItem(id: "char_birthday_f", name: "Birthday Girl 🎁", price: 600, assetOrEmoji: "assets/characters/char_birthday_f.webp", rarity: ItemRarity.common),
     ShopItem(id: "char_noel_m", name: "Snow Male ❄️", price: 800, assetOrEmoji: "assets/characters/char_noel_m.webp", rarity: ItemRarity.common),
     ShopItem(id: "char_noel_f", name: "Snow Female 🎅", price: 800, assetOrEmoji: "assets/characters/char_noel_f.webp", rarity: ItemRarity.common),
+
+    // Rare (1200 - 2000 Coins)
     ShopItem(id: "char_det_nen_m", name: "Weaver Male 🧵", price: 1200, assetOrEmoji: "assets/characters/char_det_nen_m.webp", rarity: ItemRarity.rare),
     ShopItem(id: "char_det_nen_f", name: "Weaver Female 🪡", price: 1200, assetOrEmoji: "assets/characters/char_det_nen_f.webp", rarity: ItemRarity.rare),
     ShopItem(id: "char_am_nguyet_m", name: "Dark Moon Male 🌙", price: 1800, assetOrEmoji: "assets/characters/char_am_nguyet_m.webp", rarity: ItemRarity.rare),
     ShopItem(id: "char_am_nguyet_f", name: "Dark Moon Female 🌕", price: 1800, assetOrEmoji: "assets/characters/char_am_nguyet_f.webp", rarity: ItemRarity.rare),
+    ShopItem(id: "char_astronaut", name: "Astro Explorer 🧑‍🚀", price: 2000, assetOrEmoji: "assets/characters/char_astronaut.webp", rarity: ItemRarity.rare),
+
+    // Epic (2500 - 4000 Coins)
     ShopItem(id: "char_hao_nhoang_m", name: "Flashy Male ✨", price: 2500, assetOrEmoji: "assets/characters/char_hao_nhoang_m.webp", rarity: ItemRarity.epic),
     ShopItem(id: "char_hao_nhoang_f", name: "Flashy Female 💖", price: 2500, assetOrEmoji: "assets/characters/char_hao_nhoang_f.webp", rarity: ItemRarity.epic),
     ShopItem(id: "char_lan_m", name: "Lion Dance Male 🦁", price: 3000, assetOrEmoji: "assets/characters/char_lan_m.webp", rarity: ItemRarity.epic),
     ShopItem(id: "char_lan_f", name: "Lion Dance Female 🏮", price: 3000, assetOrEmoji: "assets/characters/char_lan_f.webp", rarity: ItemRarity.epic),
     ShopItem(id: "char_xuat_kich", name: "Strike Squad 🛡️", price: 3500, assetOrEmoji: "assets/characters/char_xuat_kich.webp", rarity: ItemRarity.epic),
+    ShopItem(id: "char_cyber_mage", name: "Cyber Mage 🔮", price: 4000, assetOrEmoji: "assets/characters/char_cyber_mage.webp", rarity: ItemRarity.epic),
+
+    // Legendary (6000 - 10000 Coins)
     ShopItem(id: "char_tu_ha", name: "Fairy Zixia 🧚‍♀️", price: 6000, assetOrEmoji: "assets/characters/char_tu_ha.webp", rarity: ItemRarity.legendary),
+    ShopItem(id: "char_cyber_samurai", name: "Cyber Samurai ⚔️", price: 8000, assetOrEmoji: "assets/characters/char_cyber_samurai.webp", rarity: ItemRarity.legendary),
+    ShopItem(id: "char_pharaoh", name: "Pharaoh Gold 👑", price: 9500, assetOrEmoji: "assets/characters/char_pharaoh.webp", rarity: ItemRarity.legendary),
     ShopItem(id: "char_wukong", name: "Wukong 🐵👑", price: 10000, assetOrEmoji: "assets/characters/char_wukong.webp", rarity: ItemRarity.legendary),
   ];
 
